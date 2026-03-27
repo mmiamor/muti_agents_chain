@@ -1,8 +1,9 @@
 """
 核心模块
+
+注意：Engine/Scheduler/Pipeline 延迟导入，避免模块加载时就需要环境变量。
+使用时直接 from src.core.engine import Engine。
 """
-from .engine import Engine, engine
-from .scheduler import Scheduler, scheduler
 from .pipeline import Pipeline
 
-__all__ = ["Engine", "engine", "Scheduler", "scheduler", "Pipeline"]
+__all__ = ["Pipeline"]
