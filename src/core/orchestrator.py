@@ -102,11 +102,12 @@ def build_graph():
 
     # ── 条件边 ──
     # Reviewer 审查后，根据结果路由
+    # Phase 2: APPROVED → END (Phase 3 会改为 → Architect)
     workflow.add_conditional_edges(
         AgentNames.REVIEWER,
         review_router,
         {
-            AgentNames.ARCHITECT: AgentNames.ARCHITECT,
+            AgentNames.ARCHITECT: END,
             AgentNames.PM: AgentNames.PM,
             AgentNames.HUMAN: AgentNames.HUMAN,
         },
