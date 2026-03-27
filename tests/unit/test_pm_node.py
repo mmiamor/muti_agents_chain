@@ -122,6 +122,10 @@ class TestPMAgent:
     @pytest.mark.asyncio
     async def test_pm_node_function(self, base_state):
         """pm_node 函数应该正常调用"""
+        import src.agents.nodes.pm_node as pm_mod
+        # 重置单例，确保 patch _create_llm 生效
+        pm_mod._pm_agent = None
+
         mock_llm = MagicMock()
         mock_llm.client.chat.completions.create = AsyncMock(
             return_value=_mock_llm_response(MOCK_PRD_JSON)

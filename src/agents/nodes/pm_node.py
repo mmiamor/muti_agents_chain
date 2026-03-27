@@ -50,10 +50,11 @@ class PMAgent:
         messages = [SystemMessage(content=SYSTEM_PROMPT + review_context)]
         messages.extend(state.get("messages", []))
 
-        # 调用 LLM
+        # 调用 LLM（将 LangChain message type 转换为 OpenAI role）
+        _role_map = {"system": "system", "human": "user", "ai": "assistant", "tool": "tool"}
         response = await self.llm.client.chat.completions.create(
             model=settings.DEFAULT_MODEL,
-            messages=[{"role": m.type, "content": m.content} for m in messages],
+            messages=[{"role": _role_map.get(m.type, m.type), "content": m.content} for m in messages],
             temperature=0,
             response_format={"type": "json_object"},
         )

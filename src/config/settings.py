@@ -8,9 +8,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# 加载 .env 文件（可选，优先使用系统环境变量）
+# 加载 .env 文件（override=True 确保 .env 中的值优先于系统环境变量）
 _ROOT = Path(__file__).resolve().parent.parent.parent
-load_dotenv(_ROOT / ".env", override=False)
+load_dotenv(_ROOT / ".env", override=True)
 
 
 class Settings:
@@ -25,9 +25,9 @@ class Settings:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
     # ── LLM — 智谱 GLM-5 ──
-    ZAI_API_KEY: str = os.environ["ZAI_API_KEY"]          # 必须，不从 .env fallback
-    OPENAI_API_KEY: str = os.environ["ZAI_API_KEY"]        # 兼容 LLMService 现有字段
-    OPENAI_BASE_URL: str = "https://open.bigmodel.cn/api/paas/v4/"
+    ZAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")         # 智谱 API Key
+    OPENAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")      # 兼容 LLMService 现有字段
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/paas/v4/")
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-5")
 
     # ── Memory ──

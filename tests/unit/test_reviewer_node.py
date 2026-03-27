@@ -107,6 +107,9 @@ class TestReviewerAgent:
 
     @pytest.mark.asyncio
     async def test_reviewer_node_function(self, state_with_prd):
+        import src.agents.nodes.reviewer_node as rev_mod
+        rev_mod._reviewer_agent = None
+
         mock_llm = MagicMock()
         mock_llm.client.chat.completions.create = AsyncMock(
             return_value=_mock_llm_response(APPROVED_JSON)

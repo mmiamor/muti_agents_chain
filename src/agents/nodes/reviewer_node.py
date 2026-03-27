@@ -84,13 +84,19 @@ class ReviewerAgent:
 
         logger.info(f"[Reviewer Agent] result: {feedback.status}")
 
-        return {
+        update = {
             "latest_review": feedback,
             "sender": self.name,
             "messages": [
                 AIMessage(content=f"Reviewer: {feedback.status} — {feedback.comments}")
             ],
         }
+
+        # REJECTED 时递增 revision_count（路由器据此判断是否触发人工干预）
+        if feedback.status == "REJECTED":
+            update["revision_count"] = state.get("revision_count", 0) + 1
+
+        return update
 
     async def review(self, state: AgentState) -> bool:
         """检查是否有审查结果"""
