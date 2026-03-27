@@ -34,6 +34,15 @@ class Settings:
     MAX_CONTEXT_LENGTH: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
     MEMORY_TTL: int = int(os.getenv("MEMORY_TTL", "3600"))
 
+    # ── Agent ──
+    MAX_REVISION_COUNT: int = int(os.getenv("MAX_REVISION_COUNT", "3"))
+    RECURSION_LIMIT: int = int(os.getenv("RECURSION_LIMIT", "30"))
+    STREAM_ENABLED: bool = os.getenv("STREAM_ENABLED", "true").lower() in ("1", "true", "yes")
+
+    # ── Storage ──
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
 
 settings = Settings()
 
