@@ -27,7 +27,7 @@ class Settings:
     # ── LLM — 智谱 GLM-5 ──
     ZAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")         # 智谱 API Key
     OPENAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")      # 兼容 LLMService 现有字段
-    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/paas/v4/")
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4/")
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-5")
 
     # ── Memory ──
@@ -38,6 +38,11 @@ class Settings:
     MAX_REVISION_COUNT: int = int(os.getenv("MAX_REVISION_COUNT", "3"))
     RECURSION_LIMIT: int = int(os.getenv("RECURSION_LIMIT", "30"))
     STREAM_ENABLED: bool = os.getenv("STREAM_ENABLED", "true").lower() in ("1", "true", "yes")
+
+    # ── 限流（适配智谱 GLM 免费额度）──
+    LLM_RETRY_MAX: int = int(os.getenv("LLM_RETRY_MAX", "3"))           # 最大重试次数
+    LLM_RETRY_BASE_DELAY: float = float(os.getenv("LLM_RETRY_BASE_DELAY", "3"))  # 首次重试等待秒数
+    NODE_DELAY: float = float(os.getenv("NODE_DELAY", "2"))              # 节点间冷却秒数
 
     # ── Storage ──
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")

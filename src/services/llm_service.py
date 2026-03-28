@@ -1,12 +1,15 @@
 """
 LLM 调用服务 — 智谱 GLM 系列
+支持 429 限频自动重试 + 指数退避
 """
 from __future__ import annotations
 
+import asyncio
 import time
 from collections.abc import AsyncGenerator
 from typing import Any, Optional
 
+import openai
 from openai import AsyncOpenAI
 
 from src.utils.logger import setup_logger
@@ -43,26 +46,61 @@ class ToolFunction:
 
 
 # ──────────────────────────────────────────────
+# 重试工具
+# ──────────────────────────────────────────────
+
+
+async def _retry_with_backoff(
+    coro_factory,       # callable that returns a new coroutine each time
+    max_retries: int = 3,
+    base_delay: float = 3.0,
+) -> Any:
+    """
+    对 LLM 调用做指数退避重试，仅处理 429 (RateLimitError)。
+    其他错误直接抛出。
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return await coro_factory()
+        except openai.RateLimitError:
+            if attempt >= max_retries:
+                logger.error(f"LLM 429: 重试 {max_retries} 次仍失败")
+                raise
+            delay = base_delay * (2 ** attempt)
+            logger.warning(f"LLM 429 限频，第 {attempt + 1} 次重试，等待 {delay:.1f}s")
+            await asyncio.sleep(delay)
+
+
+# ──────────────────────────────────────────────
 # LLM Service
 # ──────────────────────────────────────────────
 
 
 class LLMService:
-    """智谱 LLM 调用封装（OpenAI SDK 兼容）"""
+    """智谱 LLM 调用封装（OpenAI SDK 兼容，内置 429 重试）"""
 
     def __init__(
         self,
         api_key: str,
         base_url: str = "https://open.bigmodel.cn/api/paas/v4/",
         default_model: str = "glm-5",
+        max_retries: int = 3,
+        base_delay: float = 3.0,
     ):
-        self.client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+        self.client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=120.0,          # GLM 偶尔响应慢，给 2 分钟
+            max_retries=0,          # 我们自己控制重试
+        )
         self.default_model = default_model
+        self.max_retries = max_retries
+        self.base_delay = base_delay
 
     # ── 核心调用 ──────────────────────────────
 
     async def chat(self, request: LLMRequest) -> LLMResponse:
-        """发送聊天请求（非流式）"""
+        """发送聊天请求（非流式），自动 429 重试"""
         start = time.perf_counter()
         logger.info(
             f"LLM request: model={request.model}, "
@@ -70,14 +108,14 @@ class LLMService:
             f"tools={len(request.tools) if request.tools else 0}"
         )
 
-        try:
-            kwargs = self._build_kwargs(request)
-            response = await self.client.chat.completions.create(**kwargs)
-            return self._parse_response(response, request.model, start)
+        kwargs = self._build_kwargs(request)
 
-        except Exception as e:
-            logger.error(f"LLM call failed: {e}")
-            raise
+        response = await _retry_with_backoff(
+            coro_factory=lambda: self.client.chat.completions.create(**kwargs),
+            max_retries=self.max_retries,
+            base_delay=self.base_delay,
+        )
+        return self._parse_response(response, request.model, start)
 
     async def chat_stream(self, request: LLMRequest) -> AsyncGenerator[str, None]:
         """流式聊天 — 逐 token yield"""
@@ -86,7 +124,11 @@ class LLMService:
         kwargs = self._build_kwargs(request)
 
         try:
-            stream = await self.client.chat.completions.create(**kwargs)
+            stream = await _retry_with_backoff(
+                coro_factory=lambda: self.client.chat.completions.create(**kwargs),
+                max_retries=self.max_retries,
+                base_delay=self.base_delay,
+            )
             async for chunk in stream:
                 delta = chunk.choices[0].delta if chunk.choices else None
                 if delta and delta.content:

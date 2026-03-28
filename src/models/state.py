@@ -47,3 +47,4 @@ class AgentState(TypedDict, total=False):
     # 审查状态
     latest_review: Optional[ReviewFeedback]
     revision_count: int
+    architect_revision_count: int
