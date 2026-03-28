@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 from src.agents.nodes.pm_node import PMAgent, pm_node
 from src.models.state import AgentState, AgentPhase
-from src.models.document_models import PRD, UserStory
+from src.models.document_models import PRD
 from src.models.agent_models import ReviewFeedback
 
 
@@ -96,28 +96,6 @@ class TestPMAgent:
         messages = call_args.kwargs["messages"]
         system_msg = messages[0]["content"]
         assert "审查员反馈" in system_msg
-
-    @pytest.mark.asyncio
-    async def test_review_passes_for_valid_prd(self, base_state):
-        """完整 PRD 自我反思应该通过"""
-        prd = PRD(
-            vision="测试",
-            target_audience=["用户"],
-            user_stories=[UserStory(role="用户", action="测试", benefit="好")],
-            core_features=["功能1"],
-            non_functional="无",
-            mermaid_flowchart="graph LR",
-        )
-        state = {**base_state, "prd": prd}
-        agent = PMAgent(llm=MagicMock())
-        assert await agent.review(state) is True
-
-    @pytest.mark.asyncio
-    async def test_review_fails_for_incomplete_prd(self, base_state):
-        """不完整 PRD 自我反思应该失败"""
-        state = base_state  # prd=None
-        agent = PMAgent(llm=MagicMock())
-        assert await agent.review(state) is False
 
     @pytest.mark.asyncio
     async def test_pm_node_function(self, base_state):

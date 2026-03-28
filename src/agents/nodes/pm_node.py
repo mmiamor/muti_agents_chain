@@ -1,26 +1,33 @@
 """PM Agent — LangGraph 节点函数"""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import re
 
 from langchain_core.messages import SystemMessage, AIMessage
 
 from src.config import settings
 from src.models.state import AgentState
 from src.models.document_models import PRD
-from src.services.llm_service import LLMService
+from src.services.llm_service import LLMService, _retry_with_backoff
 from src.prompts.pm_agent import SYSTEM_PROMPT
+from src.utils.json_extract import extract_json
 
 logger = logging.getLogger("pm_node")
 
+_role_map = {"system": "system", "human": "user", "ai": "assistant", "tool": "tool"}
+
 
 def _create_llm() -> LLMService:
-    """延迟创建 LLM 实例（避免模块导入时就需要环境变量）"""
+    """延迟创建 LLM 实例"""
     return LLMService(
         api_key=settings.ZAI_API_KEY,
         base_url=settings.OPENAI_BASE_URL,
         default_model=settings.DEFAULT_MODEL,
+        max_retries=settings.LLM_RETRY_MAX,
+        base_delay=settings.LLM_RETRY_BASE_DELAY,
     )
 
 
@@ -37,9 +44,14 @@ class PMAgent:
 
     async def run(self, state: AgentState) -> dict:
         """分析需求，生成 PRD"""
-        logger.info(f"[PM Agent] processing, sender={state.get('sender', 'N/A')}")
+        sender = state.get("sender", "N/A")
+        logger.info(f"[PM Agent] processing, sender={sender}")
 
-        # 如果已有审查反馈且被拒绝，将反馈作为额外上下文
+        # 节点间冷却，避免 429
+        if settings.NODE_DELAY > 0:
+            await asyncio.sleep(settings.NODE_DELAY)
+
+        # 审查反馈上下文
         review_context = ""
         latest_review = state.get("latest_review")
         revision_count = state.get("revision_count", 0)
@@ -47,23 +59,25 @@ class PMAgent:
             review_context = f"\n\n## ⚠️ 审查员反馈（第 {revision_count} 次修改）\n{latest_review.comments}\n请根据以上反馈修改你的 PRD。"
 
         # 构建消息
-        messages = [SystemMessage(content=SYSTEM_PROMPT + review_context)]
-        messages.extend(state.get("messages", []))
+        messages = [{"role": "system", "content": SYSTEM_PROMPT + review_context}]
+        # 传递完整上下文
+        for m in state.get("messages", []):
+            messages.append({"role": _role_map.get(m.type, m.type), "content": m.content})
 
-        # 调用 LLM（将 LangChain message type 转换为 OpenAI role）
-        _role_map = {"system": "system", "human": "user", "ai": "assistant", "tool": "tool"}
-        response = await self.llm.client.chat.completions.create(
-            model=settings.DEFAULT_MODEL,
-            messages=[{"role": _role_map.get(m.type, m.type), "content": m.content} for m in messages],
-            temperature=0,
-            response_format={"type": "json_object"},
+        response = await _retry_with_backoff(
+            coro_factory=lambda: self.llm.client.chat.completions.create(
+                model=settings.DEFAULT_MODEL,
+                messages=messages,
+                temperature=0,
+            ),
+            max_retries=self.llm.max_retries,
+            base_delay=self.llm.base_delay,
         )
 
         content = response.choices[0].message.content
         logger.debug(f"[PM Agent] raw response: {content[:200]}")
 
-        # 解析 PRD
-        prd_data = json.loads(content)
+        prd_data = extract_json(content)
         prd = PRD(**prd_data)
 
         logger.info(f"[PM Agent] PRD generated: {prd.vision}")
@@ -76,32 +90,13 @@ class PMAgent:
             ],
         }
 
-    async def review(self, state: AgentState) -> bool:
-        """自我反思 — 检查 PRD 完整性"""
-        prd = state.get("prd")
-        if not prd:
-            return False
-        # 基本完整性检查
-        checks = [
-            bool(prd.vision),
-            bool(prd.target_audience),
-            len(prd.user_stories) > 0,
-            len(prd.core_features) > 0,
-            bool(prd.mermaid_flowchart),
-        ]
-        result = all(checks)
-        if not result:
-            logger.warning(f"[PM Agent] self-review failed: {checks}")
-        return result
 
-
-# ── 模块级节点函数（LangGraph 使用）────────────────
+# ── 模块级节点函数 ─────────────────────────
 
 _pm_agent: PMAgent | None = None
 
 
 def get_pm_agent() -> PMAgent:
-    """获取或创建 PM Agent 单例（延迟初始化）"""
     global _pm_agent
     if _pm_agent is None:
         _pm_agent = PMAgent()
@@ -109,5 +104,4 @@ def get_pm_agent() -> PMAgent:
 
 
 async def pm_node(state: AgentState) -> dict:
-    """LangGraph 节点函数 — PM Agent 入口"""
     return await get_pm_agent().run(state)

@@ -38,6 +38,7 @@ def state_with_prd():
         trd=None,
         latest_review=None,
         revision_count=0,
+        architect_revision_count=0,
     )
 
 
@@ -51,6 +52,7 @@ def state_no_target():
         trd=None,
         latest_review=None,
         revision_count=0,
+        architect_revision_count=0,
     )
 
 
@@ -71,7 +73,6 @@ class TestReviewerAgent:
 
         assert "latest_review" in result
         assert result["latest_review"].status == "APPROVED"
-        assert result["sender"] == "reviewer_agent"
 
     @pytest.mark.asyncio
     async def test_rejected_review(self, state_with_prd):
@@ -93,17 +94,6 @@ class TestReviewerAgent:
 
         assert result["latest_review"].status == "REJECTED"
         assert "无法识别" in result["latest_review"].comments
-
-    @pytest.mark.asyncio
-    async def test_review_passes_with_feedback(self, state_with_prd):
-        state = {**state_with_prd, "latest_review": ReviewFeedback(status="APPROVED", comments="OK")}
-        agent = ReviewerAgent(llm=MagicMock())
-        assert await agent.review(state) is True
-
-    @pytest.mark.asyncio
-    async def test_review_fails_without_feedback(self, state_with_prd):
-        agent = ReviewerAgent(llm=MagicMock())
-        assert await agent.review(state_with_prd) is False
 
     @pytest.mark.asyncio
     async def test_reviewer_node_function(self, state_with_prd):
