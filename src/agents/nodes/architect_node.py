@@ -9,21 +9,12 @@ from langchain_core.messages import AIMessage
 from src.config import settings
 from src.models.state import AgentState
 from src.models.document_models import TRD
-from src.services.llm_service import LLMService, _retry_with_backoff
+from src.agents.factory import create_llm, get_revision_count
+from src.services.llm_service import _retry_with_backoff
 from src.prompts.architect_agent import SYSTEM_PROMPT
 from src.utils.json_extract import extract_json
 
 logger = logging.getLogger("architect_node")
-
-
-def _create_llm() -> LLMService:
-    return LLMService(
-        api_key=settings.ZAI_API_KEY,
-        base_url=settings.OPENAI_BASE_URL,
-        default_model=settings.DEFAULT_MODEL,
-        max_retries=settings.LLM_RETRY_MAX,
-        base_delay=settings.LLM_RETRY_BASE_DELAY,
-    )
 
 
 class ArchitectAgent:
@@ -32,10 +23,10 @@ class ArchitectAgent:
     name = "architect_agent"
     role = "资深架构师"
 
-    def __init__(self, llm: LLMService | None = None):
+    def __init__(self, llm=None):
         self.llm = llm
         if self.llm is None:
-            self.llm = _create_llm()
+            self.llm = create_llm()
 
     async def run(self, state: AgentState) -> dict:
         """阅读 PRD，生成 TRD"""
@@ -56,7 +47,7 @@ class ArchitectAgent:
         # 审查反馈上下文
         review_context = ""
         latest_review = state.get("latest_review")
-        revision_count = state.get("architect_revision_count", 0)
+        revision_count = get_revision_count(state, self.name)
         if latest_review and latest_review.status == "REJECTED":
             review_context = (
                 f"\n\n审查员反馈（第 {revision_count} 次修改）:\n"

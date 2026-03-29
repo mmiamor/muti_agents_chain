@@ -8,7 +8,7 @@ from typing_extensions import TypedDict
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from src.models.document_models import PRD, TRD
+from src.models.document_models import PRD, TRD, DesignDocument
 from src.models.agent_models import ReviewFeedback
 
 
@@ -43,8 +43,8 @@ class AgentState(TypedDict, total=False):
     # 核心产出物
     prd: Optional[PRD]
     trd: Optional[TRD]
+    design_doc: Optional[DesignDocument]
 
     # 审查状态
     latest_review: Optional[ReviewFeedback]
-    revision_count: int
-    architect_revision_count: int
+    revision_counts: dict[str, int]  # agent_name → revision 次数

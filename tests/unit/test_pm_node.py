@@ -40,7 +40,7 @@ def base_state():
         prd=None,
         trd=None,
         latest_review=None,
-        revision_count=0,
+        revision_counts={},
     )
 
 
@@ -53,7 +53,7 @@ def rejected_state():
         prd=None,
         trd=None,
         latest_review=ReviewFeedback(status="REJECTED", comments="缺少用户故事"),
-        revision_count=1,
+        revision_counts={"pm_agent": 1},
     )
 
 
@@ -108,6 +108,6 @@ class TestPMAgent:
         mock_llm.client.chat.completions.create = AsyncMock(
             return_value=_mock_llm_response(MOCK_PRD_JSON)
         )
-        with patch("src.agents.nodes.pm_node._create_llm", return_value=mock_llm):
+        with patch("src.agents.nodes.pm_node.create_llm", return_value=mock_llm):
             result = await pm_node(base_state)
             assert "prd" in result

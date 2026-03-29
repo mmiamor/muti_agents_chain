@@ -2,16 +2,15 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import re
 
-from langchain_core.messages import SystemMessage, AIMessage
+from langchain_core.messages import AIMessage
 
 from src.config import settings
 from src.models.state import AgentState
 from src.models.document_models import PRD
-from src.services.llm_service import LLMService, _retry_with_backoff
+from src.agents.factory import create_llm, get_revision_count
+from src.services.llm_service import _retry_with_backoff
 from src.prompts.pm_agent import SYSTEM_PROMPT
 from src.utils.json_extract import extract_json
 
@@ -20,27 +19,16 @@ logger = logging.getLogger("pm_node")
 _role_map = {"system": "system", "human": "user", "ai": "assistant", "tool": "tool"}
 
 
-def _create_llm() -> LLMService:
-    """延迟创建 LLM 实例"""
-    return LLMService(
-        api_key=settings.ZAI_API_KEY,
-        base_url=settings.OPENAI_BASE_URL,
-        default_model=settings.DEFAULT_MODEL,
-        max_retries=settings.LLM_RETRY_MAX,
-        base_delay=settings.LLM_RETRY_BASE_DELAY,
-    )
-
-
 class PMAgent:
     """PM Agent 实现"""
 
     name = "pm_agent"
     role = "资深产品经理"
 
-    def __init__(self, llm: LLMService | None = None):
+    def __init__(self, llm=None):
         self.llm = llm
         if self.llm is None:
-            self.llm = _create_llm()
+            self.llm = create_llm()
 
     async def run(self, state: AgentState) -> dict:
         """分析需求，生成 PRD"""
@@ -54,13 +42,12 @@ class PMAgent:
         # 审查反馈上下文
         review_context = ""
         latest_review = state.get("latest_review")
-        revision_count = state.get("revision_count", 0)
+        revision_count = get_revision_count(state, self.name)
         if latest_review and latest_review.status == "REJECTED":
             review_context = f"\n\n## ⚠️ 审查员反馈（第 {revision_count} 次修改）\n{latest_review.comments}\n请根据以上反馈修改你的 PRD。"
 
         # 构建消息
         messages = [{"role": "system", "content": SYSTEM_PROMPT + review_context}]
-        # 传递完整上下文
         for m in state.get("messages", []):
             messages.append({"role": _role_map.get(m.type, m.type), "content": m.content})
 

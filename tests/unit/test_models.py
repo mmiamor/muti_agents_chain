@@ -8,6 +8,9 @@ from src.models.document_models import (
     TechStack,
     APIEndpoint,
     TRD,
+    DesignTokens,
+    PageSpec,
+    DesignDocument,
 )
 from src.models.agent_models import ReviewFeedback
 
@@ -84,3 +87,38 @@ class TestReviewFeedback:
     def test_invalid_status(self):
         with pytest.raises(ValidationError):
             ReviewFeedback(status="MAYBE", comments="不支持")
+
+
+class TestDesignDocument:
+    def test_valid_design_doc(self):
+        doc = DesignDocument(
+            page_specs=[
+                PageSpec(
+                    page_name="首页",
+                    components=["搜索栏", "列表"],
+                    description="核心浏览页",
+                    mermaid_wireframe="graph TD\nA-->B",
+                )
+            ],
+            user_journey="graph LR\nA-->B-->C",
+            design_tokens=DesignTokens(
+                color_primary="#2563EB",
+                color_secondary="#6366F1",
+                font_family="Inter",
+                border_radius="8px",
+                spacing_unit="4px",
+            ),
+            responsive_strategy="移动优先",
+            component_library=["按钮", "输入框"],
+        )
+        assert len(doc.page_specs) == 1
+        assert doc.design_tokens.color_primary == "#2563EB"
+        assert doc.design_tokens.border_radius == "8px"
+
+    def test_design_tokens_required_fields(self):
+        with pytest.raises(ValidationError):
+            DesignTokens(color_primary="#fff")
+
+    def test_page_spec_optional_wireframe(self):
+        ps = PageSpec(page_name="关于", components=[], description="关于页")
+        assert ps.mermaid_wireframe == ""

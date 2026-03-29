@@ -37,8 +37,7 @@ def state_with_prd():
         ),
         trd=None,
         latest_review=None,
-        revision_count=0,
-        architect_revision_count=0,
+        revision_counts={},
     )
 
 
@@ -51,8 +50,7 @@ def state_no_target():
         prd=None,
         trd=None,
         latest_review=None,
-        revision_count=0,
-        architect_revision_count=0,
+        revision_counts={},
     )
 
 
@@ -87,6 +85,19 @@ class TestReviewerAgent:
         assert "非功能需求" in result["latest_review"].comments
 
     @pytest.mark.asyncio
+    async def test_rejected_increments_revision_count(self, state_with_prd):
+        """REJECTED 应递增对应 agent 的 revision_counts"""
+        mock_llm = MagicMock()
+        mock_llm.client.chat.completions.create = AsyncMock(
+            return_value=_mock_llm_response(REJECTED_JSON)
+        )
+        agent = ReviewerAgent(llm=mock_llm)
+        result = await agent.run(state_with_prd)
+
+        assert "revision_counts" in result
+        assert result["revision_counts"]["pm_agent"] == 1
+
+    @pytest.mark.asyncio
     async def test_no_review_target(self, state_no_target):
         """无审查目标时应返回 REJECTED 而非崩溃"""
         agent = ReviewerAgent(llm=MagicMock())
@@ -104,6 +115,6 @@ class TestReviewerAgent:
         mock_llm.client.chat.completions.create = AsyncMock(
             return_value=_mock_llm_response(APPROVED_JSON)
         )
-        with patch("src.agents.nodes.reviewer_node._create_llm", return_value=mock_llm):
+        with patch("src.agents.nodes.reviewer_node.create_llm", return_value=mock_llm):
             result = await reviewer_node(state_with_prd)
             assert "latest_review" in result

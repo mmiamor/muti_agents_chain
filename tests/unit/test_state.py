@@ -13,12 +13,23 @@ class TestAgentState:
             "sender": "user",
             "prd": None,
             "trd": None,
+            "design_doc": None,
             "latest_review": None,
-            "revision_count": 0,
+            "revision_counts": {},
         }
         assert state["current_phase"] == AgentPhase.REQUIREMENT_GATHERING
-        assert state["revision_count"] == 0
+        assert state["revision_counts"] == {}
         assert state["prd"] is None
+        assert state["design_doc"] is None
+
+    def test_revision_counts_per_agent(self):
+        """revision_counts 按 agent 名称独立计数"""
+        state: AgentState = {
+            "messages": [],
+            "revision_counts": {"pm_agent": 2, "architect_agent": 1},
+        }
+        assert state["revision_counts"]["pm_agent"] == 2
+        assert state["revision_counts"]["architect_agent"] == 1
 
     def test_phase_enum_values(self):
         """AgentPhase 枚举值验证"""
@@ -37,8 +48,9 @@ class TestAgentState:
             "sender": "user",
             "prd": None,
             "trd": None,
+            "design_doc": None,
             "latest_review": None,
-            "revision_count": 0,
+            "revision_counts": {},
         }
         state["current_phase"] = AgentPhase.ARCHITECTURE_DESIGN
         assert state["current_phase"] == "architecture_design"

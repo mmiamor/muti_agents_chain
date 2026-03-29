@@ -9,21 +9,21 @@ from langchain_core.messages import AIMessage
 from src.config import settings
 from src.models.state import AgentState
 from src.models.agent_models import ReviewFeedback
-from src.services.llm_service import LLMService, _retry_with_backoff
+from src.agents.factory import create_llm, get_revision_count, next_revision_count
+from src.services.llm_service import _retry_with_backoff
 from src.prompts.reviewer_agent import SYSTEM_PROMPT
 from src.utils.json_extract import extract_json
 
 logger = logging.getLogger("reviewer_node")
 
 
-def _create_llm() -> LLMService:
-    return LLMService(
-        api_key=settings.ZAI_API_KEY,
-        base_url=settings.OPENAI_BASE_URL,
-        default_model=settings.DEFAULT_MODEL,
-        max_retries=settings.LLM_RETRY_MAX,
-        base_delay=settings.LLM_RETRY_BASE_DELAY,
-    )
+# ── 产出物审查映射 ──
+# agent_name → (产出物 key, 审查标题)
+_ARTIFACT_MAP = {
+    "design_agent": ("design_doc", "UI/UX 设计文档"),
+    "architect_agent": ("trd", "技术设计文档"),
+    "pm_agent": ("prd", "产品需求文档"),
+}
 
 
 class ReviewerAgent:
@@ -32,10 +32,10 @@ class ReviewerAgent:
     name = "reviewer_agent"
     role = "审查专家"
 
-    def __init__(self, llm: LLMService | None = None):
+    def __init__(self, llm=None):
         self.llm = llm
         if self.llm is None:
-            self.llm = _create_llm()
+            self.llm = create_llm()
 
     async def run(self, state: AgentState) -> dict:
         """审查产出物，返回 APPROVED 或 REJECTED"""
@@ -46,30 +46,32 @@ class ReviewerAgent:
         if settings.NODE_DELAY > 0:
             await asyncio.sleep(settings.NODE_DELAY)
 
-        # 确定审查目标
-        if sender == "architect_agent" and state.get("trd"):
-            review_target = (
-                f"审查以下 TRD（技术设计文档）：\n\n"
-                f"```json\n{state['trd'].model_dump_json(indent=2)}\n```"
-            )
-        elif state.get("prd"):
-            review_target = (
-                f"审查以下 PRD（产品需求文档）：\n\n"
-                f"```json\n{state['prd'].model_dump_json(indent=2)}\n```"
-            )
-        else:
+        # 确定审查目标：按 _ARTIFACT_MAP 优先匹配当前 sender
+        artifact_key = None
+        review_title = ""
+        for agent_name, (key, title) in _ARTIFACT_MAP.items():
+            if sender == agent_name and state.get(key) is not None:
+                artifact_key = key
+                review_title = title
+                break
+
+        if not artifact_key:
             logger.warning(f"[Reviewer Agent] no review target, sender={sender}")
             return {
                 "latest_review": ReviewFeedback(status="REJECTED", comments="无法识别审查目标"),
                 "sender": self.name,
             }
 
+        review_target = (
+            f"审查以下{review_title}：\n\n"
+            f"```json\n{state[artifact_key].model_dump_json(indent=2)}\n```"
+        )
+
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": review_target},
         ]
 
-        # 使用重试包装
         response = await _retry_with_backoff(
             coro_factory=lambda: self.llm.client.chat.completions.create(
                 model=settings.DEFAULT_MODEL,
@@ -94,10 +96,7 @@ class ReviewerAgent:
         }
 
         if feedback.status == "REJECTED":
-            if sender == "architect_agent":
-                update["architect_revision_count"] = state.get("architect_revision_count", 0) + 1
-            else:
-                update["revision_count"] = state.get("revision_count", 0) + 1
+            update.update(next_revision_count(state, sender))
 
         return update
 

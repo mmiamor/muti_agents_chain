@@ -52,8 +52,7 @@ def base_state():
         prd=SAMPLE_PRD,
         trd=None,
         latest_review=ReviewFeedback(status="APPROVED", comments="PRD 通过"),
-        revision_count=0,
-        architect_revision_count=0,
+        revision_counts={},
     )
 
 
@@ -66,8 +65,7 @@ def no_prd_state():
         prd=None,
         trd=None,
         latest_review=None,
-        revision_count=0,
-        architect_revision_count=0,
+        revision_counts={},
     )
 
 
@@ -80,8 +78,7 @@ def rejected_trd_state():
         prd=SAMPLE_PRD,
         trd=None,
         latest_review=ReviewFeedback(status="REJECTED", comments="API 设计不够 RESTful"),
-        revision_count=0,
-        architect_revision_count=1,
+        revision_counts={"architect_agent": 1},
     )
 
 
@@ -128,7 +125,6 @@ class TestArchitectAgent:
         result = await agent.run(rejected_trd_state)
 
         assert result["trd"].tech_stack.backend == "FastAPI (Python 3.12)"
-        # 验证传给 LLM 的消息中包含审查反馈
         call_args = mock_llm.client.chat.completions.create.call_args
         messages = call_args.kwargs["messages"]
         system_msg = messages[0]["content"]
@@ -144,6 +140,6 @@ class TestArchitectAgent:
         mock_llm.client.chat.completions.create = AsyncMock(
             return_value=_mock_llm_response(MOCK_TRD_JSON)
         )
-        with patch("src.agents.nodes.architect_node._create_llm", return_value=mock_llm):
+        with patch("src.agents.nodes.architect_node.create_llm", return_value=mock_llm):
             result = await architect_node(base_state)
             assert "trd" in result
