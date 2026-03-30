@@ -56,7 +56,7 @@ async def _retry_with_backoff(
     base_delay: float = 3.0,
 ) -> Any:
     """
-    对 LLM 调用做指数退避重试，仅处理 429 (RateLimitError)。
+    对 LLM 调用做指数退避重试，处理 429 (RateLimitError) 和超时错误。
     其他错误直接抛出。
     """
     for attempt in range(max_retries + 1):
@@ -68,6 +68,13 @@ async def _retry_with_backoff(
                 raise
             delay = base_delay * (2 ** attempt)
             logger.warning(f"LLM 429 限频，第 {attempt + 1} 次重试，等待 {delay:.1f}s")
+            await asyncio.sleep(delay)
+        except (openai.APITimeoutError, asyncio.TimeoutError) as e:
+            if attempt >= max_retries:
+                logger.error(f"LLM 超时: 重试 {max_retries} 次仍失败")
+                raise
+            delay = base_delay * (2 ** attempt)
+            logger.warning(f"LLM 超时，第 {attempt + 1} 次重试，等待 {delay:.1f}s")
             await asyncio.sleep(delay)
 
 
@@ -91,7 +98,7 @@ class LLMService:
             api_key=api_key,
             base_url=base_url,
             timeout=120.0,          # GLM 偶尔响应慢，给 2 分钟
-            max_retries=0,          # 我们自己控制重试
+            max_retries=0,
         )
         self.default_model = default_model
         self.max_retries = max_retries

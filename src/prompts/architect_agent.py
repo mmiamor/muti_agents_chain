@@ -20,7 +20,7 @@ SYSTEM_PROMPT = """你是一位拥有 10 年经验的资深软件架构师（Sof
 {
   "tech_stack": {
     "frontend": "前端框架及核心库，例如 React + TypeScript",
-    "backend": "后端框架及核心语言，例如 FastAPI (Python 3.12)",
+    "backend": "后端框架及核心语言，例如 FastAPI (Python 3.13)",
     "database": "主数据库及缓存选型，例如 PostgreSQL + Redis",
     "infrastructure": "部署与运维设施，例如 Docker + K8s"
   },

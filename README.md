@@ -1,84 +1,132 @@
-# LLMChain — Multi-Agent AI 软件开发流水线
+# 🚀 Multi-Agent Chain — AI 软件开发流水线
 
-> 基于 LangGraph 的 Multi-Agent 系统，从产品需求到代码交付的自动化流水线。
+> 基于 LangGraph 的 Multi-Agent 系统，实现从产品需求到代码交付的全流程自动化。
 
-## 架构概览
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.3+-green.svg)](https://github.com/langchain-ai/langgraph)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## ✨ 特性
+
+- 🤖 **Multi-Agent 协作** - 7 个专业 Agent 自动协作完成软件开发全流程
+- 🔄 **智能审查机制** - 每个产出物经过自动审查，不合格自动修改
+- 🧠 **智能上下文管理** - 自动压缩和优化对话上下文，节省 30-60% token
+- 📊 **强类型数据模型** - 所有产出物使用 Pydantic 模型，确保数据质量
+- 🎯 **LangGraph 编排** - 基于状态机的流程控制，支持检查点和回滚
+- 🚦 **自动路由决策** - 智能判断下一步操作，无需人工干预
+- 📈 **可观测性** - 完善的日志和监控，实时追踪执行状态
+
+---
+
+## 🏗️ 架构概览
+
+### Agent Pipeline 流程
 
 ```
-用户需求
-   │
-   ▼
-┌─────────┐    ┌──────────┐    ┌───────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌────┐
-│ PM Agent ├───►│ Reviewer  ├───►│ Architect ├───►│ Reviewer  ├───►│  Design  ├───►│ Reviewer  ├───►│ ...│
-│ (产品经理)│    │ (审查专家)│    │ (架构师)  │    │ (审查专家)│    │ (UI/UX)  │    │ (审查专家)│    │    │
-└─────────┘    └──────────┘    └───────────┘    └──────────┘    └──────────┘    └──────────┘    │    │
-                                                                                               │    │
-     每个产出物经 Reviewer 审查：                                                               ▼    │
-     ✅ APPROVED → 流转下一阶段                                                                 │    │
-     ❌ REJECTED → 打回当前 Agent 修改（最多 3 次）                                              │    │
-     🚨 超限 → 人工干预 (Human Intervention)                                                     │    │
-                                                                                               ┌────┴──┐
-                                                                                               │ QA    │
-                                                                                               │ Agent │──► Reviewer → END
-                                                                                               └───────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Multi-Agent 开发流水线                         │
+└─────────────────────────────────────────────────────────────────┘
+
+用户需求输入
+     │
+     ▼
+┌─────────────┐      ┌──────────────┐      ┌───────────────┐
+│  PM Agent   │─────▶│   Reviewer   │◀─────│  Feedback     │
+│ (产品经理)   │      │  (审查专家)   │      │  (反馈循环)    │
+└─────────────┘      └──────┬───────┘      └───────────────┘
+     │ APPROVED               │
+     ▼                        │ REJECTED (最多3次)
+┌─────────────┐               │
+│Architect    │─────▶ ┌──────┴───────┐
+│(架构师)      │      │   Reviewer   │
+└─────────────┘      │  (审查专家)   │
+     │              └──────┬───────┘
+     ▼                     │
+┌─────────────┐             │
+│  Design     │─────▶ ┌────┴──────┐
+│ (UI/UX设计) │      │ Reviewer  │
+└─────────────┘      └────┬──────┘
+     │                     │
+     ▼                     │
+┌─────────────┐             │
+│ Backend Dev │─────▶ ┌────┴──────┐
+│ Frontend Dev│      │ Reviewer  │
+└─────────────┘      └────┬──────┘
+     │                     │
+     ▼                     │
+┌─────────────┐             │
+│   QA Agent  │─────▶ ┌────┴──────┐
+│ (质量保障)   │      │ Reviewer  │───▶ 最终交付
+└─────────────┘      └───────────┘
+
+审查机制:
+✅ APPROVED  → 流转到下一阶段
+❌ REJECTED  → 返回当前 Agent 修改 (最多3次)
+🚨 超限      → 人工干预处理
 ```
 
-### 完整流水线
+### 完整开发阶段
 
 | 阶段 | Agent | 产出物 | 说明 |
 |------|-------|--------|------|
-| 1 | PM Agent | PRD | 产品需求文档（用户故事、核心功能、流程图） |
-| 2 | Architect Agent | TRD | 技术设计文档（技术栈、架构、ER图、API） |
-| 3 | Design Agent | DesignDocument | UI/UX 设计（页面规格、设计 Token、用户旅程） |
-| 4 | Backend Dev Agent | BackendCodeSpec | 后端代码（文件列表、项目结构、启动命令） |
-| 5 | Frontend Dev Agent | FrontendCodeSpec | 前端代码（组件文件、项目结构、依赖） |
-| 6 | QA Agent | QAReport | 质量报告（测试计划、质量评分、潜在问题） |
+| 1️⃣ | PM Agent | PRD | 产品需求文档（用户故事、核心功能、业务流程） |
+| 2️⃣ | Architect Agent | TRD | 技术设计文档（技术栈、架构、数据库、API） |
+| 3️⃣ | Design Agent | DesignDocument | UI/UX 设计（页面规格、设计系统、用户旅程） |
+| 4️⃣ | Backend Dev Agent | BackendCodeSpec | 后端代码（项目结构、文件内容、启动命令） |
+| 5️⃣ | Frontend Dev Agent | FrontendCodeSpec | 前端代码（组件、样式、依赖配置） |
+| 6️⃣ | QA Agent | QAReport | 质量报告（测试计划、质量评分、潜在问题） |
 
-### 核心机制
+---
 
-- **StageRegistry** — 声明式阶段注册表，新增 Agent 只需添加一行配置
-- **ReviewRouter** — 基于 AgentState 中产出物自动判断当前阶段，决定 APPROVED/REJECTED/HUMAN 路由
-- **Revision Counter** — 每个 Agent 独立计数，防止单阶段死循环
-- **LangGraph StateGraph** — 状态机驱动，MemorySaver 检查点支持
+## 🛠️ 技术栈
 
-## 技术栈
+| 类别 | 技术 | 用途 |
+|------|------|------|
+| **语言** | Python 3.13+ | 核心开发语言 |
+| **框架** | LangGraph 0.3+ | Agent 编排与状态机 |
+| **LLM** | 智谱 GLM-5 | 主力语言模型 |
+| **API** | FastAPI | HTTP 服务层 |
+| **数据** | Pydantic | 强类型数据验证 |
+| **测试** | pytest + pytest-asyncio | 单元测试和 E2E 测试 |
 
-- **Python 3.13** — pyenv 管理
-- **LangGraph** — Agent 编排与状态机
-- **LangChain** — LLM 抽象层
-- **智谱 GLM-5** — 主力 LLM（OpenAI SDK 兼容）
-- **Pydantic** — 全部产出物使用强类型数据模型
-- **FastAPI** — HTTP 服务层
-- **pytest + asyncio** — 单元测试 + E2E 测试
+---
 
-## 项目结构
+## 📁 项目结构
 
 ```
-llmchain/
+muti_agents_chain/
 ├── src/
-│   ├── agents/                     # Multi-Agent 系统
-│   │   ├── base.py                 # Agent 抽象基类
-│   │   ├── factory.py              # LLM 工厂 + revision 计数工具
-│   │   ├── context.py              # Agent 上下文管理
-│   │   ├── registry.py             # Agent 注册表
-│   │   └── nodes/                  # LangGraph 节点函数
-│   │       ├── pm_node.py          # PM Agent — 生成 PRD
-│   │       ├── architect_node.py   # Architect Agent — 生成 TRD
-│   │       ├── design_node.py      # Design Agent — 生成 DesignDocument
-│   │       ├── backend_dev_node.py # Backend Dev — 生成后端代码
-│   │       ├── frontend_dev_node.py# Frontend Dev — 生成前端代码
-│   │       ├── qa_node.py          # QA Agent — 生成质量报告
-│   │       └── reviewer_node.py    # Reviewer — 审查产出物
-│   ├── core/
-│   │   ├── orchestrator.py         # LangGraph 图构建 + 路由
-│   │   ├── engine.py               # 主引擎
-│   │   ├── pipeline.py             # 处理管道
-│   │   └── scheduler.py            # 任务调度器
-│   ├── models/
-│   │   ├── state.py                # AgentState 全局状态定义
-│   │   ├── document_models.py      # PRD / TRD / DesignDoc / CodeSpec / QAReport
-│   │   └── agent_models.py         # ReviewFeedback 等模型
-│   ├── prompts/                    # Agent 系统提示词
+│   ├── agents/                    # 🤖 Multi-Agent 系统
+│   │   ├── base.py                # Agent 基类
+│   │   ├── factory.py             # Agent 工厂
+│   │   ├── registry.py            # Agent 注册表
+│   │   └── nodes/                 # Agent 节点实现
+│   │       ├── pm_node.py         # PM Agent
+│   │       ├── architect_node.py  # Architect Agent
+│   │       ├── design_node.py     # Design Agent
+│   │       ├── backend_dev_node.py# Backend Dev Agent
+│   │       ├── frontend_dev_node.py# Frontend Dev Agent
+│   │       ├── qa_node.py         # QA Agent
+│   │       └── reviewer_node.py   # Reviewer Agent
+│   │
+│   ├── core/                      # ⚙️ 核心引擎
+│   │   ├── orchestrator.py        # LangGraph 编排器
+│   │   ├── engine.py              # 主引擎
+│   │   ├── pipeline.py            # 处理管道
+│   │   └── scheduler.py           # 任务调度器
+│   │
+│   ├── memory/                    # 🧠 智能记忆系统
+│   │   ├── context_manager.py     # 上下文管理器
+│   │   └── agent_context.py       # Agent 上下文工具
+│   │
+│   ├── models/                    # 📊 数据模型
+│   │   ├── state.py               # LangGraph State 定义
+│   │   ├── document_models.py     # 文档模型（PRD/TRD等）
+│   │   └── agent_models.py        # Agent 相关模型
+│   │
+│   ├── prompts/                   # 💬 Agent 提示词
 │   │   ├── pm_agent.py
 │   │   ├── architect_agent.py
 │   │   ├── design_agent.py
@@ -86,51 +134,55 @@ llmchain/
 │   │   ├── frontend_dev_agent.py
 │   │   ├── qa_agent.py
 │   │   └── reviewer_agent.py
-│   ├── services/
-│   │   ├── llm_service.py          # LLM 调用（含重试与退避）
-│   │   ├── chain_service.py        # Chain 编排
-│   │   └── memory_service.py       # 记忆管理
-│   ├── config/
-│   │   └── settings.py             # 环境配置（.env）
-│   ├── api/
-│   │   ├── server.py               # FastAPI 服务
-│   │   └── routes.py               # API 路由
-│   └── utils/
-│       ├── json_extract.py         # LLM 响应 JSON 提取
-│       ├── logger.py               # 日志配置
-│       └── helpers.py              # 通用工具
-├── tests/
-│   ├── unit/                       # 单元测试（105 个）
-│   │   ├── test_pm_node.py
-│   │   ├── test_architect_node.py
-│   │   ├── test_design_node.py
-│   │   ├── test_backend_dev_node.py
-│   │   ├── test_frontend_dev_node.py
-│   │   ├── test_qa_node.py
-│   │   ├── test_reviewer_node.py
-│   │   ├── test_orchestrator.py    # 路由与阶段注册表测试
-│   │   ├── test_models.py          # 数据模型测试
-│   │   ├── test_state.py
-│   │   └── test_agents.py          # 基类与注册表测试
-│   ├── integration/                # 集成测试
-│   └── e2e_pm_reviewer*.py         # E2E 真实 LLM 测试
-├── .env                            # 环境变量（API Key 等）
-└── requirements.txt
+│   │
+│   ├── services/                  # 🔧 基础服务
+│   │   ├── llm_service.py         # LLM 调用服务
+│   │   ├── chain_service.py       # Chain 编排服务
+│   │   └── memory_service.py      # 记忆管理服务
+│   │
+│   ├── config/                    # ⚙️ 配置管理
+│   │   ├── settings.py            # 环境配置
+│   │   └── context_config.py      # 上下文配置
+│   │
+│   ├── api/                       # 🌐 API 层
+│   │   ├── server.py              # FastAPI 服务器
+│   │   └── routes.py              # API 路由
+│   │
+│   └── utils/                     # 🛠️ 工具函数
+│       ├── logger.py              # 日志配置
+│       ├── json_extract.py        # JSON 提取工具
+│       └── helpers.py             # 通用工具
+│
+├── tests/                         # 🧪 测试
+│   ├── unit/                      # 单元测试
+│   ├── integration/               # 集成测试
+│   └── e2e_pm_reviewer.py         # E2E 测试
+│
+├── docs/                          # 📚 文档
+│   ├── PROJECT_STANDARDS.md       # 项目标准
+│   ├── CONTEXT_MANAGEMENT.md      # 上下文管理指南
+│   └── README.md                  # 本文件
+│
+├── .env.example                   # 环境变量示例
+├── requirements.txt               # Python 依赖
+└── README.md                      # 项目说明
 ```
 
-## 快速开始
+---
+
+## 🚀 快速开始
 
 ### 1. 环境准备
 
 ```bash
-# Python 3.13（pyenv）
+# 安装 Python 3.13（使用 pyenv）
 pyenv install 3.13.11
 pyenv local 3.13.11
 
 # 创建虚拟环境
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1   # Windows
-source .venv/bin/activate      # macOS/Linux
+source .venv/bin/activate  # macOS/Linux
+# .\.venv\Scripts\Activate.ps1  # Windows
 ```
 
 ### 2. 安装依赖
@@ -145,92 +197,277 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-编辑 `.env`：
+编辑 `.env` 文件：
+
 ```ini
+# LLM API 配置
 ZAI_API_KEY=your_zhipu_api_key_here
+OPENAI_API_KEY=your_zhipu_api_key_here
+OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
 DEFAULT_MODEL=glm-5
+
+# 服务配置
+APP_HOST=0.0.0.0
+APP_PORT=8000
+DEBUG=true
+LOG_LEVEL=INFO
+
+# Agent 配置
 NODE_DELAY=2                    # 节点间冷却秒数（防限流）
 MAX_REVISION_COUNT=3            # 单 Agent 最大修改次数
+RECURSION_LIMIT=30              # LangGraph 最大递归深度
+STREAM_ENABLED=true             # 启用流式输出
+
+# 上下文管理配置
+MAX_CONTEXT_MESSAGES=100        # 最大上下文消息数
+MAX_CONTEXT_TOKENS=8000         # 最大上下文 tokens
+COMPACT_THRESHOLD=0.8           # 触发压缩的阈值
 ```
 
 ### 4. 运行测试
 
 ```bash
-# 单元测试（105 个，~40s）
+# 单元测试
 python -m pytest tests/unit/ -v
 
-# E2E 真实 LLM 测试（需要有效 API Key）
-python -m tests.e2e_pm_reviewer
+# E2E 测试（需要有效的 API Key）
+python tests/e2e_pm_reviewer.py
 ```
 
 ### 5. 启动服务
 
 ```bash
+# 启动 FastAPI 服务
 python -m src.main
+
+# 或使用 uvicorn 直接启动
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 数据模型
+访问 http://localhost:8000 查看 API 文档。
 
-所有 Agent 产出物均为 Pydantic 强类型模型：
+---
 
+## 💡 使用示例
+
+### Python API 调用
+
+```python
+import asyncio
+from langchain_core.messages import HumanMessage
+from src.core.orchestrator import build_graph
+from src.models.state import AgentPhase
+
+async def main():
+    # 构建图
+    graph = build_graph()
+    config = {"configurable": {"thread_id": "demo-001"}}
+
+    # 准备输入
+    initial_state = {
+        "messages": [
+            HumanMessage(content="我想做一个遛狗APP，帮助忙碌的都市养狗人找到靠谱的遛狗服务者")
+        ],
+        "current_phase": AgentPhase.REQUIREMENT_GATHERING,
+        "sender": "user",
+    }
+
+    # 执行流程
+    result = await graph.ainvoke(initial_state, config)
+
+    # 获取结果
+    prd = result.get("prd")
+    trd = result.get("trd")
+    design_doc = result.get("design_doc")
+
+    print(f"产品愿景: {prd.vision}")
+    print(f"技术栈: {trd.tech_stack}")
+    print(f"设计文档: {design_doc.user_journey}")
+
+asyncio.run(main())
 ```
-PRD
-├── vision: str                  # 产品愿景
-├── target_audience: list[str]   # 目标用户
-├── user_stories: list[UserStory]
-├── core_features: list[str]
-├── non_functional: str
-└── mermaid_flowchart: str
 
-TRD
-├── tech_stack: TechStack        # frontend / backend / database / infra
-├── architecture_overview: str
-├── mermaid_er_diagram: str
-└── api_endpoints: list[APIEndpoint]
+### HTTP API 调用
 
-DesignDocument
-├── page_specs: list[PageSpec]
-├── user_journey: str
-├── design_tokens: DesignTokens
-├── responsive_strategy: str
-└── component_library: list[str]
+```bash
+# 启动完整流水线
+curl -X POST http://localhost:8000/api/v1/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "我想做一个遛狗APP"
+  }'
 
-BackendCodeSpec / FrontendCodeSpec
-├── project_structure: str
-├── files: list[CodeFile]        # path / description / content
-├── setup_commands: list[str]
-└── dependencies: str
+# 查询任务状态
+curl http://localhost:8000/api/v1/status/{thread_id}
 
-QAReport
-├── test_plan: list[QATestCase]  # name / type / scope / steps / expected
-├── quality_score: int           # 1-10
-├── quality_breakdown: QualityBreakdown  # 5 维度评分
-├── potential_issues: list[PotentialIssue]
-└── summary: str
+# 获取任务结果
+curl http://localhost:8000/api/v1/result/{thread_id}
 ```
 
-## 开发指南
+---
+
+## 📊 数据模型
+
+所有 Agent 产出物都使用 Pydantic 强类型模型：
+
+### PRD（产品需求文档）
+```python
+{
+  "vision": "打造最便捷的遛狗服务平台...",
+  "target_audience": ["忙碌的都市白领", "行动不便的老年人"],
+  "core_features": ["在线预约", "实时定位", "安全保险"],
+  "user_stories": [...],
+  "mermaid_flowchart": "graph TD; A[用户] --> B[浏览]",
+  "non_functional": {...}
+}
+```
+
+### TRD（技术设计文档）
+```python
+{
+  "tech_stack": {
+    "frontend": ["React", "TypeScript"],
+    "backend": ["FastAPI", "Python"],
+    "database": ["PostgreSQL"],
+    "infra": ["Docker", "AWS"]
+  },
+  "architecture_overview": "...",
+  "mermaid_er_diagram": "erDiagram...",
+  "api_endpoints": [...]
+}
+```
+
+### DesignDocument（UI/UX 设计）
+```python
+{
+  "page_specs": [...],
+  "user_journey": "...",
+  "design_tokens": {...},
+  "responsive_strategy": "...",
+  "component_library": [...]
+}
+```
+
+---
+
+## 🔧 开发指南
 
 ### 新增 Agent
 
-只需 3 步：
+只需 3 步即可添加新的 Agent：
 
-1. **创建节点** — `src/agents/nodes/your_agent.py`
-2. **创建 Prompt** — `src/prompts/your_agent.py`
-3. **注册阶段** — 在 `src/core/orchestrator.py` 的 `StageRegistry.stages` 添加一行
-
+1. **创建节点** - `src/agents/nodes/your_agent.py`
 ```python
-# orchestrator.py — StageRegistry.stages
-{
-    "agent": AgentNames.YOUR_AGENT,
-    "artifact": "your_artifact",
-    "next_agent": AgentNames.NEXT_AGENT,  # "__end__" 表示结束
-},
+class YourAgent(BaseAgent):
+    name = "your_agent"
+    role = "您的角色"
+
+    async def run(self, state: AgentState) -> dict:
+        # 实现逻辑
+        return {"artifact": ...}
+
+    async def review(self, state: AgentState) -> bool:
+        # 自我审查
+        return True
 ```
 
-路由、审查、死循环防护全部自动生效。
+2. **创建 Prompt** - `src/prompts/your_agent.py`
+```python
+SYSTEM_PROMPT = """
+您是一位专业的{角色}...
+"""
+```
 
-### 环境变量
+3. **注册阶段** - 在 `src/core/orchestrator.py` 添加配置
+```python
+StageRegistry.stages = [
+    # ... 其他阶段
+    {
+        "agent": AgentNames.YOUR_AGENT,
+        "artifact": "your_artifact",
+        "next_agent": AgentNames.NEXT_AGENT,
+    },
+]
+```
+
+### 上下文优化使用
+
+```python
+from src.memory.agent_context import prepare_messages_for_llm
+
+# 在 Agent 中使用优化的上下文
+messages = prepare_messages_for_llm(
+    state["messages"],
+    system_prompt=SYSTEM_PROMPT,
+    agent_name="your_agent",
+)
+
+# 自动处理：
+# ✅ 上下文压缩
+# ✅ 系统提示添加
+# ✅ Token 限制裁剪
+# ✅ 关键信息保留
+```
+
+---
+
+## 📈 性能优化
+
+### 智能上下文管理
+
+- **自动压缩**: 当消息超过阈值时自动压缩
+- **智能保留**: 保留关键信息（系统提示、用户需求、决策点）
+- **Token 节省**: 平均节省 30-60% 的 token 使用量
+- **滑动窗口**: 保留最近的消息维持对话连贯性
+
+### 配置优化
+
+```python
+from src.config.context_config import get_balanced_config
+
+# 选择预设配置
+config = get_balanced_config()  # 轻量/平衡/全面
+
+# 或自定义配置
+from src.memory.context_manager import ContextConfig
+
+config = ContextConfig(
+    max_messages=100,
+    max_tokens=8000,
+    compact_threshold=0.8,
+)
+```
+
+---
+
+## 🧪 测试
+
+### 测试覆盖
+
+| 类型 | 覆盖范围 | 命令 |
+|------|----------|------|
+| 单元测试 | Agent 逻辑、工具函数 | `pytest tests/unit/ -v` |
+| 集成测试 | Agent 间协作 | `pytest tests/integration/ -v` |
+| E2E 测试 | 完整流程 | `python tests/e2e_pm_reviewer.py` |
+
+### 测试数据
+
+测试数据位于 `tests/fixtures/` 目录，包含：
+- 示例 PRD
+- 示例 TRD
+- 示例设计文档
+
+---
+
+## 📚 文档
+
+- [项目标准](docs/PROJECT_STANDARDS.md) - 详细的开发标准和规范
+- [上下文管理](docs/CONTEXT_MANAGEMENT.md) - 智能上下文管理指南
+- [API 文档](http://localhost:8000/docs) - FastAPI 自动生成的 API 文档
+
+---
+
+## 🔍 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
@@ -239,10 +476,44 @@ QAReport
 | `OPENAI_BASE_URL` | 智谱 API | OpenAI 兼容 Base URL |
 | `NODE_DELAY` | `2` | 节点间冷却秒数 |
 | `MAX_REVISION_COUNT` | `3` | 单 Agent 最大修改次数 |
-| `RECURSION_LIMIT` | `30` | LangGraph 最大递归 |
-| `LLM_RETRY_MAX` | `3` | LLM 调用最大重试 |
-| `LLM_RETRY_BASE_DELAY` | `3` | 重试初始等待秒数 |
+| `RECURSION_LIMIT` | `30` | LangGraph 最大递归深度 |
+| `STREAM_ENABLED` | `true` | 启用流式输出 |
 
-## License
+---
 
-MIT
+## 🤝 贡献指南
+
+欢迎贡献代码！请遵循以下步骤：
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交变更 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+---
+
+## 📝 许可证
+
+本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
+
+---
+
+## 🙏 致谢
+
+- [LangGraph](https://github.com/langchain-ai/langgraph) - 强大的 Agent 编排框架
+- [智谱 AI](https://open.bigmodel.cn/) - 提供 GLM 系列语言模型
+- [LangChain](https://github.com/langchain-ai/langchain) - LLM 应用开发框架
+
+---
+
+## 📮 联系方式
+
+如有问题或建议，请：
+
+- 提交 [Issue](https://github.com/your-repo/muti_agents_chain/issues)
+- 发送邮件到 [mmiamor@icloud.com](mmiamor@icloud.com)
+
+---
+
+**Made with ❤️ by Multi-Agent Chain Team**

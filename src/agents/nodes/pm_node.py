@@ -13,10 +13,9 @@ from src.agents.factory import create_llm, get_revision_count
 from src.services.llm_service import _retry_with_backoff
 from src.prompts.pm_agent import SYSTEM_PROMPT
 from src.utils.json_extract import extract_json
+from src.memory.agent_context import prepare_messages_for_llm
 
 logger = logging.getLogger("pm_node")
-
-_role_map = {"system": "system", "human": "user", "ai": "assistant", "tool": "tool"}
 
 
 class PMAgent:
@@ -46,10 +45,13 @@ class PMAgent:
         if latest_review and latest_review.status == "REJECTED":
             review_context = f"\n\n## ⚠️ 审查员反馈（第 {revision_count} 次修改）\n{latest_review.comments}\n请根据以上反馈修改你的 PRD。"
 
-        # 构建消息
-        messages = [{"role": "system", "content": SYSTEM_PROMPT + review_context}]
-        for m in state.get("messages", []):
-            messages.append({"role": _role_map.get(m.type, m.type), "content": m.content})
+        # 使用优化的上下文管理器准备消息
+        system_prompt = SYSTEM_PROMPT + review_context
+        messages = prepare_messages_for_llm(
+            state.get("messages", []),
+            system_prompt=system_prompt,
+            agent_name=self.name,
+        )
 
         response = await _retry_with_backoff(
             coro_factory=lambda: self.llm.client.chat.completions.create(

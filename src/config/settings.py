@@ -39,7 +39,7 @@ class Settings:
     RECURSION_LIMIT: int = int(os.getenv("RECURSION_LIMIT", "30"))
     STREAM_ENABLED: bool = os.getenv("STREAM_ENABLED", "true").lower() in ("1", "true", "yes")
 
-    # ── 限流（适配智谱 GLM 免费额度）──
+    # ── 限流（适配智谱 GLM）──
     LLM_RETRY_MAX: int = int(os.getenv("LLM_RETRY_MAX", "3"))           # 最大重试次数
     LLM_RETRY_BASE_DELAY: float = float(os.getenv("LLM_RETRY_BASE_DELAY", "3"))  # 首次重试等待秒数
     NODE_DELAY: float = float(os.getenv("NODE_DELAY", "2"))              # 节点间冷却秒数
