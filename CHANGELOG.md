@@ -11,8 +11,39 @@
 
 ### 计划中
 - 并行执行优化（Backend + Frontend Agent）
-- 多模型支持
 - 监控 Dashboard
+
+### 新增 ✨
+
+#### Agent 专用模型配置
+- **独立模型配置**: 每个 Agent 可配置不同的 LLM 模型
+- **环境变量支持**: 通过 `.env.*` 文件配置 Agent 专用模型
+- **默认模型回退**: 未配置的 Agent 自动使用默认模型
+- **运行时查询**: 支持查询当前 Agent 模型配置
+- **灵活配置**: 可根据成本、性能需求为不同 Agent 选择最合适的模型
+
+#### 配置模块
+- `src/config/agent_models.py` - Agent 模型配置管理
+- `AgentModelConfig` - 模型配置类
+- `parse_agent_model_config()` - 配置解析函数
+
+#### 工厂增强
+- `src/agents/factory.py` - 支持创建 Agent 专用 LLM 实例
+- `create_llm(agent_name)` - 为指定 Agent 创建 LLM
+
+#### 配置文件
+- `.env.agent_models_example` - Agent 模型配置示例
+- `.env.example` - 更新：添加 Agent 模型配置说明
+
+#### 测试和文档
+- `test_agent_models.py` - Agent 模型配置测试套件
+- `docs/AGENT_MODEL_CONFIG.md` - 完整的配置指南
+
+### 优化 🚀
+
+#### Agent 节点更新
+- PM Agent 现在使用配置的专用模型
+- 所有 Agent 节点支持模型参数注入
 
 ---
 

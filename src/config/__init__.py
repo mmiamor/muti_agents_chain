@@ -10,6 +10,10 @@ from src.config.environment import (
     is_production,
     reload_settings,
 )
+from src.config.agent_models import (
+    AgentModelConfig,
+    parse_agent_model_config,
+)
 
 __all__ = [
     "settings",
@@ -19,4 +23,6 @@ __all__ = [
     "is_testing",
     "is_production",
     "reload_settings",
+    "AgentModelConfig",
+    "parse_agent_model_config",
 ]

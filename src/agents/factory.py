@@ -5,12 +5,26 @@ from src.config import settings
 from src.services.llm_service import LLMService
 
 
-def create_llm() -> LLMService:
-    """创建标准 LLM 实例（所有 Agent 共用）"""
+def create_llm(agent_name: str | None = None) -> LLMService:
+    """
+    创建 LLM 实例
+
+    Args:
+        agent_name: Agent 名称，用于获取专用模型配置。
+                   如果为 None，使用默认模型。
+
+    Returns:
+        LLMService 实例
+    """
+    # 获取 Agent 专用模型
+    model = settings.DEFAULT_MODEL
+    if agent_name:
+        model = settings.agent_model_config.get_model_for_agent(agent_name)
+
     return LLMService(
         api_key=settings.OPENAI_API_KEY,
         base_url=settings.OPENAI_BASE_URL,
-        default_model=settings.DEFAULT_MODEL,
+        default_model=model,
         max_retries=settings.LLM_RETRY_MAX,
         base_delay=settings.LLM_RETRY_BASE_DELAY,
     )

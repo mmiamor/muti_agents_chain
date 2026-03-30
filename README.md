@@ -39,6 +39,12 @@
 - **配置隔离** - 每个环境独立的数据库和配置
 - **一键切换** - 简单的环境变量切换机制
 
+### 🎯 Agent 专用模型配置
+- **灵活模型选择** - 每个 Agent 可配置不同的 LLM 模型
+- **成本优化** - 根据任务重要性选择不同性能的模型
+- **默认回退** - 未配置的 Agent 自动使用默认模型
+- **运行时查询** - 支持查询和验证 Agent 模型配置
+
 ---
 
 ## 🏗️ 系统架构
@@ -426,6 +432,61 @@ git checkout main         # → development
 | API 文档 | 开启 | 开启 | 关闭 |
 | CORS | 全部 | 限制 | 严格 |
 
+
+---
+
+## 🎯 Agent 模型配置
+
+### 为什么需要 Agent 专用模型？
+
+不同的 Agent 任务复杂度不同，对模型性能的要求也不同：
+
+- **PM Agent、Architect Agent** - 需要深度思考和复杂推理 → 使用高性能模型
+- **Backend Dev、Frontend Dev** - 代码生成任务对速度要求高 → 使用快速模型
+- **QA Agent** - 测试任务相对简单 → 使用标准模型
+
+### 配置方法
+
+在环境配置文件中添加 Agent 专用模型：
+
+```bash
+# .env.development
+DEFAULT_MODEL=glm-4              # 默认模型
+PM_MODEL=glm-4-plus             # PM Agent 使用高性能模型
+ARCHITECT_MODEL=glm-4-plus      # Architect Agent 使用高性能模型
+BACKEND_DEV_MODEL=glm-4-turbo   # 后端开发使用快速模型
+FRONTEND_DEV_MODEL=glm-4-turbo  # 前端开发使用快速模型
+```
+
+### 模型选择建议
+
+| Agent | 推荐模型 | 原因 |
+|-------|----------|------|
+| PM Agent | glm-4-plus | 需求分析需要深度思考 |
+| Architect Agent | glm-4-plus | 架构设计需要复杂推理 |
+| Design Agent | glm-4 | UI/UX 设计需要平衡性能和质量 |
+| Backend Dev Agent | glm-4-turbo | 代码生成需要速度 |
+| Frontend Dev Agent | glm-4-turbo | 代码生成需要速度 |
+| QA Agent | glm-4 | 测试任务相对简单 |
+| Reviewer Agent | glm-4-plus | 代码审查需要高质量输出 |
+
+### API 使用
+
+```python
+from src.agents.factory import create_llm
+from src.config import settings
+
+# 为特定 Agent 创建 LLM
+pm_llm = create_llm(agent_name="pm_agent")
+qa_llm = create_llm(agent_name="qa_agent")
+
+# 查看当前配置
+config = settings.agent_model_config
+print(f"PM Agent 模型: {config.get_model_for_agent('pm_agent')}")
+print(f"所有模型: {config.get_all_models()}")
+```
+
+详细配置指南请参考：[Agent 模型配置指南](docs/AGENT_MODEL_CONFIG.md)
 
 ---
 

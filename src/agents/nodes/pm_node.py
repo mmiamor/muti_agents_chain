@@ -27,7 +27,8 @@ class PMAgent:
     def __init__(self, llm=None):
         self.llm = llm
         if self.llm is None:
-            self.llm = create_llm()
+            # 传入 agent_name 以获取专用模型
+            self.llm = create_llm(agent_name=self.name)
 
     async def run(self, state: AgentState) -> dict:
         """分析需求，生成 PRD"""
@@ -55,7 +56,7 @@ class PMAgent:
 
         response = await _retry_with_backoff(
             coro_factory=lambda: self.llm.client.chat.completions.create(
-                model=settings.DEFAULT_MODEL,
+                model=self.llm.default_model,  # 使用 Agent 专用模型
                 messages=messages,
                 temperature=0,
             ),

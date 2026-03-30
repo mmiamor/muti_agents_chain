@@ -8,6 +8,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from src.config.agent_models import parse_agent_model_config
+
 # 加载生产环境 .env 文件
 _ROOT = Path(__file__).resolve().parent.parent.parent
 # 先加载基础配置，再加载环境特定配置（后者覆盖前者）
@@ -33,6 +35,15 @@ class Settings:
         "https://open.bigmodel.cn/api/coding/paas/v4"
     )
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-4")
+
+    # ── Agent 模型配置 ──
+    PM_MODEL: str = os.getenv("PM_MODEL", "")
+    ARCHITECT_MODEL: str = os.getenv("ARCHITECT_MODEL", "")
+    DESIGN_MODEL: str = os.getenv("DESIGN_MODEL", "")
+    BACKEND_DEV_MODEL: str = os.getenv("BACKEND_DEV_MODEL", "")
+    FRONTEND_DEV_MODEL: str = os.getenv("FRONTEND_DEV_MODEL", "")
+    QA_MODEL: str = os.getenv("QA_MODEL", "")
+    REVIEWER_MODEL: str = os.getenv("REVIEWER_MODEL", "")
 
     # ── Memory ──
     MAX_CONTEXT_LENGTH: int = int(os.getenv("MAX_CONTEXT_LENGTH", "30"))
@@ -62,6 +73,25 @@ class Settings:
     ENABLE_API_DOCS: bool = False
     ENABLE_CORS: bool = True
     CORS_ORIGINS: list[str] = os.getenv("CORS_ORIGINS", "").split(",")
+
+    # ── Agent 模型配置实例（在初始化时创建）──
+    _agent_model_config = None
+
+    @property
+    def agent_model_config(self):
+        """获取 Agent 模型配置"""
+        if self._agent_model_config is None:
+            self._agent_model_config = parse_agent_model_config(
+                default_model=self.DEFAULT_MODEL,
+                pm_model=self.PM_MODEL if self.PM_MODEL else None,
+                architect_model=self.ARCHITECT_MODEL if self.ARCHITECT_MODEL else None,
+                design_model=self.DESIGN_MODEL if self.DESIGN_MODEL else None,
+                backend_dev_model=self.BACKEND_DEV_MODEL if self.BACKEND_DEV_MODEL else None,
+                frontend_dev_model=self.FRONTEND_DEV_MODEL if self.FRONTEND_DEV_MODEL else None,
+                qa_model=self.QA_MODEL if self.QA_MODEL else None,
+                reviewer_model=self.REVIEWER_MODEL if self.REVIEWER_MODEL else None,
+            )
+        return self._agent_model_config
 
 
 __all__ = ["Settings"]
