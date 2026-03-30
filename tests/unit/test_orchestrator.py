@@ -2,7 +2,7 @@
 import pytest
 
 from src.models.state import AgentState, AgentPhase
-from src.models.document_models import PRD, TRD, DesignDocument, TechStack, UserStory, APIEndpoint, PageSpec, DesignTokens
+from src.models.document_models import PRD, TRD, DesignDocument, BackendCodeSpec, FrontendCodeSpec, TechStack, UserStory, APIEndpoint, PageSpec, DesignTokens, CodeFile
 from src.models.agent_models import ReviewFeedback
 from src.core.orchestrator import review_router, AgentNames, StageRegistry
 
@@ -42,6 +42,8 @@ def _make_state(
     prd=None,
     trd=None,
     design_doc=None,
+    backend_code=None,
+    frontend_code=None,
     review=None,
     revision_counts=None,
 ) -> AgentState:
@@ -53,6 +55,8 @@ def _make_state(
         prd=prd,
         trd=trd,
         design_doc=design_doc,
+        backend_code=backend_code,
+        frontend_code=frontend_code,
         latest_review=review,
         revision_counts=revision_counts or {},
     )
@@ -79,6 +83,24 @@ class TestStageRegistry:
         assert stage is not None
         assert stage["agent"] == AgentNames.DESIGN
 
+    def test_find_stage_backend_dev(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE,
+        )
+        stage = StageRegistry.find_stage(state)
+        assert stage is not None
+        assert stage["agent"] == AgentNames.BACKEND_DEV
+
+    def test_find_stage_frontend_dev(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE, frontend_code=SAMPLE_FRONTEND_CODE,
+        )
+        stage = StageRegistry.find_stage(state)
+        assert stage is not None
+        assert stage["agent"] == AgentNames.FRONTEND_DEV
+
     def test_find_stage_no_artifact(self):
         state = _make_state()
         assert StageRegistry.find_stage(state) is None
@@ -89,8 +111,17 @@ class TestStageRegistry:
         assert nxt["agent"] == AgentNames.ARCHITECT
 
     def test_find_next_stage_design(self):
-        """Design 是最后一个阶段，没有下一阶段"""
-        assert StageRegistry.find_next_stage(AgentNames.DESIGN) is None
+        nxt = StageRegistry.find_next_stage(AgentNames.DESIGN)
+        assert nxt is not None
+        assert nxt["agent"] == AgentNames.BACKEND_DEV
+
+    def test_find_next_stage_backend_dev(self):
+        nxt = StageRegistry.find_next_stage(AgentNames.BACKEND_DEV)
+        assert nxt is not None
+        assert nxt["agent"] == AgentNames.FRONTEND_DEV
+
+    def test_find_next_stage_frontend_dev_is_last(self):
+        assert StageRegistry.find_next_stage(AgentNames.FRONTEND_DEV) is None
 
 
 class TestReviewRouterPMPhase:
@@ -171,12 +202,12 @@ class TestReviewRouterArchitectPhase:
 class TestReviewRouterDesignPhase:
     """Design 阶段路由测试（有 design_doc）"""
 
-    def test_design_approved_goes_to_end(self):
+    def test_design_approved_goes_to_backend_dev(self):
         state = _make_state(
             prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
             review=ReviewFeedback(status="APPROVED", comments="设计完整"),
         )
-        assert review_router(state) == "__end__"
+        assert review_router(state) == AgentNames.BACKEND_DEV
 
     def test_design_rejected_goes_back_to_design(self):
         state = _make_state(
@@ -194,7 +225,77 @@ class TestReviewRouterDesignPhase:
         assert review_router(state) == AgentNames.HUMAN
 
 
-class TestReviewRouterEdgeCases:
+SAMPLE_BACKEND_CODE = BackendCodeSpec(
+    project_structure="src/\n├── main.py",
+    files=[CodeFile(path="src/main.py", description="入口", content="print('hello')")],
+    setup_commands=["pip install -r requirements.txt"],
+    dependencies="fastapi",
+)
+
+SAMPLE_FRONTEND_CODE = FrontendCodeSpec(
+    project_structure="src/\n├── App.tsx",
+    files=[CodeFile(path="src/App.tsx", description="根组件", content="export default App")],
+    setup_commands=["npm install"],
+    dependencies="react",
+)
+
+
+class TestReviewRouterBackendDevPhase:
+    """Backend Dev 阶段路由测试"""
+
+    def test_backend_approved_goes_to_frontend_dev(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE,
+            review=ReviewFeedback(status="APPROVED", comments="后端代码OK"),
+        )
+        assert review_router(state) == AgentNames.FRONTEND_DEV
+
+    def test_backend_rejected_goes_back(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE,
+            review=ReviewFeedback(status="REJECTED", comments="缺少错误处理"),
+        )
+        assert review_router(state) == AgentNames.BACKEND_DEV
+
+    def test_backend_max_revision_triggers_human(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE,
+            review=ReviewFeedback(status="REJECTED", comments="不行"),
+            revision_counts={"backend_dev_agent": 3},
+        )
+        assert review_router(state) == AgentNames.HUMAN
+
+
+class TestReviewRouterFrontendDevPhase:
+    """Frontend Dev 阶段路由测试"""
+
+    def test_frontend_approved_goes_to_end(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE, frontend_code=SAMPLE_FRONTEND_CODE,
+            review=ReviewFeedback(status="APPROVED", comments="前端代码OK"),
+        )
+        assert review_router(state) == "__end__"
+
+    def test_frontend_rejected_goes_back(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE, frontend_code=SAMPLE_FRONTEND_CODE,
+            review=ReviewFeedback(status="REJECTED", comments="组件缺失"),
+        )
+        assert review_router(state) == AgentNames.FRONTEND_DEV
+
+    def test_frontend_max_revision_triggers_human(self):
+        state = _make_state(
+            prd=SAMPLE_PRD, trd=SAMPLE_TRD, design_doc=SAMPLE_DESIGN,
+            backend_code=SAMPLE_BACKEND_CODE, frontend_code=SAMPLE_FRONTEND_CODE,
+            review=ReviewFeedback(status="REJECTED", comments="不行"),
+            revision_counts={"frontend_dev_agent": 3},
+        )
+        assert review_router(state) == AgentNames.HUMAN
     """边界情况"""
 
     def test_no_artifact_routes_to_pm(self):
@@ -213,4 +314,6 @@ class TestAgentNames:
         assert AgentNames.REVIEWER == "reviewer_agent"
         assert AgentNames.ARCHITECT == "architect_agent"
         assert AgentNames.DESIGN == "design_agent"
+        assert AgentNames.BACKEND_DEV == "backend_dev_agent"
+        assert AgentNames.FRONTEND_DEV == "frontend_dev_agent"
         assert AgentNames.HUMAN == "human_intervention"

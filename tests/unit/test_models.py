@@ -11,6 +11,9 @@ from src.models.document_models import (
     DesignTokens,
     PageSpec,
     DesignDocument,
+    CodeFile,
+    BackendCodeSpec,
+    FrontendCodeSpec,
 )
 from src.models.agent_models import ReviewFeedback
 
@@ -122,3 +125,28 @@ class TestDesignDocument:
     def test_page_spec_optional_wireframe(self):
         ps = PageSpec(page_name="关于", components=[], description="关于页")
         assert ps.mermaid_wireframe == ""
+
+
+class TestCodeSpec:
+    def test_code_file(self):
+        f = CodeFile(path="src/main.py", description="入口", content="print('hi')")
+        assert f.path == "src/main.py"
+
+    def test_backend_code_spec(self):
+        spec = BackendCodeSpec(
+            project_structure="src/",
+            files=[CodeFile(path="main.py", description="入口", content="code")],
+            setup_commands=["pip install -r req.txt"],
+            dependencies="fastapi",
+        )
+        assert len(spec.files) == 1
+        assert spec.setup_commands == ["pip install -r req.txt"]
+
+    def test_frontend_code_spec(self):
+        spec = FrontendCodeSpec(
+            project_structure="src/",
+            files=[CodeFile(path="App.tsx", description="根组件", content="code")],
+            setup_commands=["npm install"],
+            dependencies="react",
+        )
+        assert len(spec.files) == 1

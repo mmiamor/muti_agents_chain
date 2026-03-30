@@ -20,6 +20,8 @@ logger = logging.getLogger("reviewer_node")
 # ── 产出物审查映射 ──
 # agent_name → (产出物 key, 审查标题)
 _ARTIFACT_MAP = {
+    "frontend_dev_agent": ("frontend_code", "前端代码"),
+    "backend_dev_agent": ("backend_code", "后端代码"),
     "design_agent": ("design_doc", "UI/UX 设计文档"),
     "architect_agent": ("trd", "技术设计文档"),
     "pm_agent": ("prd", "产品需求文档"),

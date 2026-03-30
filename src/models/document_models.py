@@ -76,3 +76,28 @@ class DesignDocument(BaseModel):
     design_tokens: DesignTokens = Field(description="设计 Token")
     responsive_strategy: str = Field(description="响应式设计策略说明")
     component_library: list[str] = Field(description="复用组件清单")
+
+
+# ── Code 相关 ────────────────────────────────────────
+
+class CodeFile(BaseModel):
+    """单个代码文件"""
+    path: str = Field(description="文件相对路径，例如 src/models/user.py")
+    description: str = Field(description="文件功能描述")
+    content: str = Field(description="文件完整代码内容")
+
+
+class BackendCodeSpec(BaseModel):
+    """后端代码规格"""
+    project_structure: str = Field(description="项目目录树（文本格式）")
+    files: list[CodeFile] = Field(description="核心代码文件列表（5-10 个）")
+    setup_commands: list[str] = Field(description="项目启动命令，例如 pip install -r requirements.txt")
+    dependencies: str = Field(description="核心依赖说明")
+
+
+class FrontendCodeSpec(BaseModel):
+    """前端代码规格"""
+    project_structure: str = Field(description="项目目录树（文本格式）")
+    files: list[CodeFile] = Field(description="核心代码文件列表（5-10 个）")
+    setup_commands: list[str] = Field(description="项目启动命令，例如 npm install && npm run dev")
+    dependencies: str = Field(description="核心依赖说明")

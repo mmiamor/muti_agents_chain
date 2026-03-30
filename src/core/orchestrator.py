@@ -52,6 +52,16 @@ class StageRegistry:
         {
             "agent": AgentNames.DESIGN,
             "artifact": "design_doc",
+            "next_agent": AgentNames.BACKEND_DEV,
+        },
+        {
+            "agent": AgentNames.BACKEND_DEV,
+            "artifact": "backend_code",
+            "next_agent": AgentNames.FRONTEND_DEV,
+        },
+        {
+            "agent": AgentNames.FRONTEND_DEV,
+            "artifact": "frontend_code",
             "next_agent": "__end__",
         },
     ]
@@ -127,8 +137,9 @@ def build_graph():
     """
     构建 LangGraph StateGraph
 
-    Phase 4 流程：
-        PM → Reviewer → Architect → Reviewer → Design → Reviewer → END
+    Phase 5 流程：
+        PM → Reviewer → Architect → Reviewer → Design → Reviewer
+        → Backend Dev → Reviewer → Frontend Dev → Reviewer → END
         (每个 Agent 后 REJECTED 可循环，超过 max 次进 Human)
     """
     from langgraph.graph import StateGraph, END
@@ -138,6 +149,8 @@ def build_graph():
     from src.agents.nodes.reviewer_node import reviewer_node
     from src.agents.nodes.architect_node import architect_node
     from src.agents.nodes.design_node import design_node
+    from src.agents.nodes.backend_dev_node import backend_dev_node
+    from src.agents.nodes.frontend_dev_node import frontend_dev_node
 
     workflow = StateGraph(AgentState)
 
@@ -146,6 +159,8 @@ def build_graph():
     workflow.add_node(AgentNames.REVIEWER, reviewer_node)
     workflow.add_node(AgentNames.ARCHITECT, architect_node)
     workflow.add_node(AgentNames.DESIGN, design_node)
+    workflow.add_node(AgentNames.BACKEND_DEV, backend_dev_node)
+    workflow.add_node(AgentNames.FRONTEND_DEV, frontend_dev_node)
 
     # 人工干预节点（占位）
     async def human_node(state: AgentState) -> dict:
@@ -161,6 +176,8 @@ def build_graph():
     workflow.add_edge(AgentNames.PM, AgentNames.REVIEWER)
     workflow.add_edge(AgentNames.ARCHITECT, AgentNames.REVIEWER)
     workflow.add_edge(AgentNames.DESIGN, AgentNames.REVIEWER)
+    workflow.add_edge(AgentNames.BACKEND_DEV, AgentNames.REVIEWER)
+    workflow.add_edge(AgentNames.FRONTEND_DEV, AgentNames.REVIEWER)
 
     # ── 条件边：Reviewer → 根据 review_router 路由 ──
     workflow.add_conditional_edges(
@@ -170,6 +187,8 @@ def build_graph():
             AgentNames.PM: AgentNames.PM,
             AgentNames.ARCHITECT: AgentNames.ARCHITECT,
             AgentNames.DESIGN: AgentNames.DESIGN,
+            AgentNames.BACKEND_DEV: AgentNames.BACKEND_DEV,
+            AgentNames.FRONTEND_DEV: AgentNames.FRONTEND_DEV,
             "__end__": END,
             AgentNames.HUMAN: AgentNames.HUMAN,
         },
