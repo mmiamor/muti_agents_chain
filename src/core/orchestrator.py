@@ -62,6 +62,11 @@ class StageRegistry:
         {
             "agent": AgentNames.FRONTEND_DEV,
             "artifact": "frontend_code",
+            "next_agent": AgentNames.QA,
+        },
+        {
+            "agent": AgentNames.QA,
+            "artifact": "qa_report",
             "next_agent": "__end__",
         },
     ]
@@ -137,9 +142,10 @@ def build_graph():
     """
     构建 LangGraph StateGraph
 
-    Phase 5 流程：
+    Phase 6 流程：
         PM → Reviewer → Architect → Reviewer → Design → Reviewer
-        → Backend Dev → Reviewer → Frontend Dev → Reviewer → END
+        → Backend Dev → Reviewer → Frontend Dev → Reviewer
+        → QA → Reviewer → END
         (每个 Agent 后 REJECTED 可循环，超过 max 次进 Human)
     """
     from langgraph.graph import StateGraph, END
@@ -151,6 +157,7 @@ def build_graph():
     from src.agents.nodes.design_node import design_node
     from src.agents.nodes.backend_dev_node import backend_dev_node
     from src.agents.nodes.frontend_dev_node import frontend_dev_node
+    from src.agents.nodes.qa_node import qa_node
 
     workflow = StateGraph(AgentState)
 
@@ -161,6 +168,7 @@ def build_graph():
     workflow.add_node(AgentNames.DESIGN, design_node)
     workflow.add_node(AgentNames.BACKEND_DEV, backend_dev_node)
     workflow.add_node(AgentNames.FRONTEND_DEV, frontend_dev_node)
+    workflow.add_node(AgentNames.QA, qa_node)
 
     # 人工干预节点（占位）
     async def human_node(state: AgentState) -> dict:
@@ -178,6 +186,7 @@ def build_graph():
     workflow.add_edge(AgentNames.DESIGN, AgentNames.REVIEWER)
     workflow.add_edge(AgentNames.BACKEND_DEV, AgentNames.REVIEWER)
     workflow.add_edge(AgentNames.FRONTEND_DEV, AgentNames.REVIEWER)
+    workflow.add_edge(AgentNames.QA, AgentNames.REVIEWER)
 
     # ── 条件边：Reviewer → 根据 review_router 路由 ──
     workflow.add_conditional_edges(
@@ -189,6 +198,7 @@ def build_graph():
             AgentNames.DESIGN: AgentNames.DESIGN,
             AgentNames.BACKEND_DEV: AgentNames.BACKEND_DEV,
             AgentNames.FRONTEND_DEV: AgentNames.FRONTEND_DEV,
+            AgentNames.QA: AgentNames.QA,
             "__end__": END,
             AgentNames.HUMAN: AgentNames.HUMAN,
         },

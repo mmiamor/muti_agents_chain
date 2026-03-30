@@ -14,6 +14,10 @@ from src.models.document_models import (
     CodeFile,
     BackendCodeSpec,
     FrontendCodeSpec,
+    QATestCase,
+    QualityBreakdown,
+    PotentialIssue,
+    QAReport,
 )
 from src.models.agent_models import ReviewFeedback
 
@@ -150,3 +154,51 @@ class TestCodeSpec:
             dependencies="react",
         )
         assert len(spec.files) == 1
+
+
+class TestQAReport:
+    def test_valid_qa_report(self):
+        report = QAReport(
+            test_plan=[
+                QATestCase(
+                    test_name="登录测试",
+                    test_type="unit",
+                    scope="backend",
+                    description="测试登录",
+                    steps=["POST /login"],
+                    expected_result="200 OK",
+                ),
+            ],
+            quality_score=8,
+            quality_breakdown=QualityBreakdown(
+                completeness=8, consistency=9, security=7, maintainability=8, error_handling=8,
+            ),
+            potential_issues=[
+                PotentialIssue(
+                    severity="medium",
+                    category="security",
+                    description="缺少限流",
+                    recommendation="加中间件",
+                ),
+            ],
+            summary="质量良好",
+        )
+        assert report.quality_score == 8
+        assert len(report.test_plan) == 1
+        assert len(report.potential_issues) == 1
+
+    def test_test_case_invalid_type(self):
+        with pytest.raises(ValidationError):
+            QATestCase(test_name="bad", test_type="invalid", scope="backend", description="x", steps=[], expected_result="y")
+
+    def test_quality_breakdown_scores(self):
+        qb = QualityBreakdown(
+            completeness=10, consistency=10, security=10, maintainability=10, error_handling=10,
+        )
+        assert qb.completeness == 10
+
+    def test_potential_issue_invalid_severity(self):
+        with pytest.raises(ValidationError):
+            PotentialIssue(
+                severity="critical", category="security", description="x", recommendation="y",
+            )

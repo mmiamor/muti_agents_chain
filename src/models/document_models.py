@@ -101,3 +101,41 @@ class FrontendCodeSpec(BaseModel):
     files: list[CodeFile] = Field(description="核心代码文件列表（5-10 个）")
     setup_commands: list[str] = Field(description="项目启动命令，例如 npm install && npm run dev")
     dependencies: str = Field(description="核心依赖说明")
+
+
+# ── QA 报告相关 ──────────────────────────────────
+
+class QATestCase(BaseModel):
+    """测试用例"""
+    test_name: str = Field(description="测试名称")
+    test_type: Literal["unit", "integration", "e2e"] = Field(description="测试类型")
+    scope: Literal["backend", "frontend", "full_stack"] = Field(description="测试范围")
+    description: str = Field(description="测试描述")
+    steps: list[str] = Field(description="测试步骤")
+    expected_result: str = Field(description="预期结果")
+
+
+class QualityBreakdown(BaseModel):
+    """质量评分细项"""
+    completeness: int = Field(description="完整性评分（1-10）")
+    consistency: int = Field(description="一致性评分（1-10）")
+    security: int = Field(description="安全性评分（1-10）")
+    maintainability: int = Field(description="可维护性评分（1-10）")
+    error_handling: int = Field(description="错误处理评分（1-10）")
+
+
+class PotentialIssue(BaseModel):
+    """潜在问题"""
+    severity: Literal["high", "medium", "low"] = Field(description="严重程度")
+    category: Literal["security", "performance", "logic", "compatibility"] = Field(description="问题类别")
+    description: str = Field(description="问题描述")
+    recommendation: str = Field(description="修复建议")
+
+
+class QAReport(BaseModel):
+    """QA 质量保障报告"""
+    test_plan: list[QATestCase] = Field(description="测试计划用例列表")
+    quality_score: int = Field(description="整体质量评分（1-10）")
+    quality_breakdown: QualityBreakdown = Field(description="质量评分细项")
+    potential_issues: list[PotentialIssue] = Field(description="潜在问题列表")
+    summary: str = Field(description="整体质量评估总结")
