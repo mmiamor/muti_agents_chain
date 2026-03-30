@@ -1,0 +1,79 @@
+# 完整软件开发流水线
+name: full_pipeline
+description: 完整的软件开发流水线，包含所有阶段
+version: "1.0.0"
+
+stages:
+  # 阶段 1: 产品需求
+  - name: requirements
+    agents:
+      - name: pm_agent
+        enabled: true
+        max_revisions: 3
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+  # 阶段 2: 架构设计
+  - name: architecture
+    agents:
+      - name: architect_agent
+        enabled: true
+        max_revisions: 3
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+  # 阶段 3: UI/UX 设计
+  - name: design
+    agents:
+      - name: design_agent
+        enabled: true
+        max_revisions: 3
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+  # 阶段 4: 开发（前后端并行）
+  - name: development
+    agents:
+      - name: backend_dev_agent
+        enabled: true
+        max_revisions: 3
+      - name: frontend_dev_agent
+        enabled: true
+        max_revisions: 3
+    mode: parallel
+    parallel_group: dev_group
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+  # 阶段 5: 质量测试
+  - name: testing
+    agents:
+      - name: qa_agent
+        enabled: true
+        max_revisions: 2
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 2
+
+global_settings:
+  timeout: 300
+  retry_on_failure: true
+  save_intermediate_results: true

@@ -1,0 +1,33 @@
+description: '自定义工作流: my_custom_workflow'
+global_settings: {}
+name: my_custom_workflow
+parallel_stages: null
+skip_agents: []
+skip_conditions: null
+stages:
+- agents:
+  - custom_prompt: null
+    enabled: true
+    max_revisions: 3
+    name: pm_agent
+    retry_on_failure: true
+    timeout: 300
+  - custom_prompt: null
+    enabled: true
+    max_revisions: 3
+    name: backend_dev_agent
+    retry_on_failure: true
+    timeout: 300
+  conditions: null
+  mode: !!python/object/apply:src.models.workflow.ExecutionMode
+  - sequential
+  name: custom_stage
+  parallel_group: null
+  review:
+    auto_fix: true
+    enabled: false
+    max_fix_attempts: 3
+    reviewer: null
+    strategy: !!python/object/apply:src.models.workflow.ReviewStrategy
+    - skip
+version: 1.0.0

@@ -1,0 +1,44 @@
+# 仅前端开发流程
+name: frontend_only
+description: 只包含前端开发的工作流
+version: "1.0.0"
+
+stages:
+  # 阶段 1: 需求分析
+  - name: frontend_analysis
+    agents:
+      - name: pm_agent
+        enabled: true
+        max_revisions: 2
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+
+  # 阶段 2: UI/UX 设计
+  - name: ui_design
+    agents:
+      - name: design_agent
+        enabled: true
+        max_revisions: 2
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+
+  # 阶段 3: 前端开发
+  - name: frontend_dev
+    agents:
+      - name: frontend_dev_agent
+        enabled: true
+        max_revisions: 3
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+global_settings:
+  timeout: 300
+  retry_on_failure: true

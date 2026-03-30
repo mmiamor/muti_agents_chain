@@ -1,0 +1,44 @@
+# 仅后端开发流程
+name: backend_only
+description: 只包含后端开发的工作流
+version: "1.0.0"
+
+stages:
+  # 阶段 1: 需求分析
+  - name: backend_analysis
+    agents:
+      - name: pm_agent
+        enabled: true
+        max_revisions: 2
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+
+  # 阶段 2: 后端架构
+  - name: backend_arch
+    agents:
+      - name: architect_agent
+        enabled: true
+        max_revisions: 2
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+
+  # 阶段 3: 后端开发
+  - name: backend_dev
+    agents:
+      - name: backend_dev_agent
+        enabled: true
+        max_revisions: 3
+    mode: sequential
+    review:
+      enabled: true
+      strategy: auto
+      auto_fix: true
+      max_fix_attempts: 3
+
+global_settings:
+  timeout: 300
+  retry_on_failure: true

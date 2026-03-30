@@ -1,0 +1,39 @@
+# 快速原型开发流程
+name: rapid_prototype
+description: 快速原型开发，跳过审查，快速迭代
+version: "1.0.0"
+
+stages:
+  # 阶段 1: 快速设计
+  - name: quick_design
+    agents:
+      - name: pm_agent
+        enabled: true
+        max_revisions: 1
+      - name: architect_agent
+        enabled: true
+        max_revisions: 1
+    mode: sequential
+    review:
+      enabled: false
+      strategy: skip
+
+  # 阶段 2: 快速开发（并行）
+  - name: quick_dev
+    agents:
+      - name: backend_dev_agent
+        enabled: true
+        max_revisions: 1
+      - name: frontend_dev_agent
+        enabled: true
+        max_revisions: 1
+    mode: parallel
+    parallel_group: quick_dev_group
+    review:
+      enabled: false
+      strategy: skip
+
+global_settings:
+  timeout: 180
+  retry_on_failure: false
+  save_intermediate_results: false
