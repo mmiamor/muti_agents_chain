@@ -1,54 +1,29 @@
 """
-配置模块
+配置模块 - 多环境配置管理
 """
 from __future__ import annotations
 
-import os
-from pathlib import Path
+# 首先导入环境管理
+from src.config.environment import get_environment, detect_environment
 
-from dotenv import load_dotenv
+# 自动检测环境
+_detected_env = detect_environment()
 
-# 加载 .env 文件（override=True 确保 .env 中的值优先于系统环境变量）
-_ROOT = Path(__file__).resolve().parent.parent.parent
-load_dotenv(_ROOT / ".env", override=True)
+# 根据环境导入对应配置
+if _detected_env == "production":
+    from src.config.production import Settings
+elif _detected_env == "testing":
+    from src.config.testing import Settings
+else:  # development
+    from src.config.development import Settings
 
-
-class Settings:
-    """应用配置 — 敏感值（如 API Key）从系统环境变量读取"""
-
-    # ── App ──
-    APP_NAME: str = "LLMChain AI Backend"
-    APP_VERSION: str = "0.1.0"
-    APP_HOST: str = os.getenv("APP_HOST", "0.0.0.0")
-    APP_PORT: int = int(os.getenv("APP_PORT", "8000"))
-    DEBUG: bool = os.getenv("DEBUG", "false").lower() in ("1", "true", "yes")
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-
-    # ── LLM — 智谱 GLM-5 ──
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")      # 兼容 LLMService 现有字段
-    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4")
-    DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-5-trubo")
-
-    # ── Memory ──
-    MAX_CONTEXT_LENGTH: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
-    MEMORY_TTL: int = int(os.getenv("MEMORY_TTL", "3600"))
-
-    # ── Agent ──
-    MAX_REVISION_COUNT: int = int(os.getenv("MAX_REVISION_COUNT", "3"))
-    RECURSION_LIMIT: int = int(os.getenv("RECURSION_LIMIT", "30"))
-    STREAM_ENABLED: bool = os.getenv("STREAM_ENABLED", "true").lower() in ("1", "true", "yes")
-
-    # ── 限流（适配智谱 GLM）──
-    LLM_RETRY_MAX: int = int(os.getenv("LLM_RETRY_MAX", "5"))           # 最大重试次数（增加到5次）
-    LLM_RETRY_BASE_DELAY: float = float(os.getenv("LLM_RETRY_BASE_DELAY", "5"))  # 首次重试等待秒数（增加到5秒）
-    NODE_DELAY: float = float(os.getenv("NODE_DELAY", "5"))              # 节点间冷却秒数（增加到5秒）
-    LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "300"))              # LLM 请求超时时间（秒）
-
-    # ── Storage ──
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
-
+# 创建配置实例
 settings = Settings()
 
-__all__ = ["settings"]
+# 导出环境相关函数和类
+__all__ = [
+    "settings",
+    "Settings",
+    "get_environment",
+]
+

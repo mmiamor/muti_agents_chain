@@ -8,19 +8,40 @@
 
 ---
 
-## ✨ 特性
+## ✨ 核心特性
 
-- 🤖 **Multi-Agent 协作** - 7 个专业 Agent 自动协作完成软件开发全流程
-- 🔄 **智能审查机制** - 每个产出物经过自动审查，不合格自动修改
-- 🧠 **智能上下文管理** - 自动压缩和优化对话上下文，节省 30-60% token
-- 📊 **强类型数据模型** - 所有产出物使用 Pydantic 模型，确保数据质量
-- 🎯 **LangGraph 编排** - 基于状态机的流程控制，支持检查点和回滚
-- 🚦 **自动路由决策** - 智能判断下一步操作，无需人工干预
-- 📈 **可观测性** - 完善的日志和监控，实时追踪执行状态
+### 🤖 智能 Multi-Agent 协作
+- **7 个专业 Agent** - PM、架构师、设计师、后端开发、前端开发、QA、审查员
+- **自动编排** - 基于 LangGraph 状态机的智能流程控制
+- **质量保障** - 每个产出物经过自动审查，不合格自动修改（最多 3 次）
+- **人工干预** - 超过修改限制时触发人工干预流程
+
+### 🧠 智能上下文管理
+- **自动压缩** - 当上下文超过阈值时自动压缩历史消息
+- **智能保留** - 保留关键信息（系统提示、用户需求、决策点）
+- **Token 优化** - 平均节省 30-60% 的 token 使用量
+- **滑动窗口** - 保留最近的消息维持对话连贯性
+
+### 📊 强类型数据模型
+- **Pydantic 模型** - 所有产出物使用强类型验证
+- **结构化输出** - PRD、TRD、设计文档、代码规范等
+- **类型安全** - 编译时类型检查，减少运行时错误
+
+### 🌐 流式输出 + 持久化
+- **实时反馈** - Server-Sent Events (SSE) 流式输出
+- **细粒度事件** - 7 种事件类型（phase, progress, artifact, thinking, review, error, done）
+- **结果持久化** - 自动保存所有 Agent 产出物到数据库
+- **人工干预管理** - 完整的干预任务生命周期管理
+
+### 🔧 多环境配置
+- **三环境支持** - Development（开发）、Testing（测试）、Production（生产）
+- **智能检测** - 自动检测环境（环境变量 → Git 分支 → 默认）
+- **配置隔离** - 每个环境独立的数据库和配置
+- **一键切换** - 简单的环境变量切换机制
 
 ---
 
-## 🏗️ 架构概览
+## 🏗️ 系统架构
 
 ### Agent Pipeline 流程
 
@@ -67,7 +88,7 @@
 🚨 超限      → 人工干预处理
 ```
 
-### 完整开发阶段
+### 开发阶段详解
 
 | 阶段 | Agent | 产出物 | 说明 |
 |------|-------|--------|------|
@@ -82,14 +103,32 @@
 
 ## 🛠️ 技术栈
 
-| 类别 | 技术 | 用途 |
+### 核心框架
+| 技术 | 版本 | 用途 |
 |------|------|------|
-| **语言** | Python 3.13+ | 核心开发语言 |
-| **框架** | LangGraph 0.3+ | Agent 编排与状态机 |
-| **LLM** | 智谱 GLM-5 | 主力语言模型 |
-| **API** | FastAPI | HTTP 服务层 |
-| **数据** | Pydantic | 强类型数据验证 |
-| **测试** | pytest + pytest-asyncio | 单元测试和 E2E 测试 |
+| Python | 3.13+ | 核心开发语言 |
+| LangGraph | 0.3+ | Agent 编排与状态机 |
+| LangChain | Latest | LLM 抽象层 |
+| FastAPI | Latest | HTTP 服务层 |
+
+### 数据存储
+| 技术 | 用途 |
+|------|------|
+| SQLAlchemy | ORM 框架 |
+| aiosqlite | 异步 SQLite |
+| Redis | 缓存和会话 |
+
+### LLM 提供商
+| 提供商 | 模型 | 用途 |
+|--------|------|------|
+| 智谱 AI | Qwen3-235B-A22B | 主力语言模型 |
+
+### 开发工具
+| 工具 | 用途 |
+|------|------|
+| pytest | 测试框架 |
+| python-dotenv | 环境变量管理 |
+| uvicorn | ASGI 服务器 |
 
 ---
 
@@ -99,73 +138,77 @@
 muti_agents_chain/
 ├── src/
 │   ├── agents/                    # 🤖 Multi-Agent 系统
-│   │   ├── base.py                # Agent 基类
-│   │   ├── factory.py             # Agent 工厂
-│   │   ├── registry.py            # Agent 注册表
-│   │   └── nodes/                 # Agent 节点实现
-│   │       ├── pm_node.py         # PM Agent
-│   │       ├── architect_node.py  # Architect Agent
-│   │       ├── design_node.py     # Design Agent
-│   │       ├── backend_dev_node.py# Backend Dev Agent
-│   │       ├── frontend_dev_node.py# Frontend Dev Agent
-│   │       ├── qa_node.py         # QA Agent
-│   │       └── reviewer_node.py   # Reviewer Agent
+│   │   ├── nodes/                 # Agent 节点实现
+│   │   │   ├── pm_node.py         # PM Agent
+│   │   │   ├── architect_node.py  # Architect Agent
+│   │   │   ├── design_node.py     # Design Agent
+│   │   │   ├── backend_dev_node.py# Backend Dev Agent
+│   │   │   ├── frontend_dev_node.py# Frontend Dev Agent
+│   │   │   ├── qa_node.py         # QA Agent
+│   │   │   └── reviewer_node.py   # Reviewer Agent
+│   │   └── prompts/               # Agent 提示词
 │   │
 │   ├── core/                      # ⚙️ 核心引擎
 │   │   ├── orchestrator.py        # LangGraph 编排器
-│   │   ├── engine.py              # 主引擎
-│   │   ├── pipeline.py            # 处理管道
-│   │   └── scheduler.py           # 任务调度器
+│   │   └── enhanced_pipeline.py   # 增强流程（持久化+流式）
 │   │
 │   ├── memory/                    # 🧠 智能记忆系统
-│   │   ├── context_manager.py     # 上下文管理器
-│   │   └── agent_context.py       # Agent 上下文工具
+│   │   └── context_manager.py     # 上下文管理器
 │   │
 │   ├── models/                    # 📊 数据模型
 │   │   ├── state.py               # LangGraph State 定义
-│   │   ├── document_models.py     # 文档模型（PRD/TRD等）
-│   │   └── agent_models.py        # Agent 相关模型
+│   │   └── document_models.py     # 文档模型（PRD/TRD等）
 │   │
-│   ├── prompts/                   # 💬 Agent 提示词
-│   │   ├── pm_agent.py
-│   │   ├── architect_agent.py
-│   │   ├── design_agent.py
-│   │   ├── backend_dev_agent.py
-│   │   ├── frontend_dev_agent.py
-│   │   ├── qa_agent.py
-│   │   └── reviewer_agent.py
+│   ├── database/                  # 💾 数据库
+│   │   └── models.py              # 持久化模型
 │   │
-│   ├── services/                  # 🔧 基础服务
+│   ├── services/                  # 🔧 服务层
 │   │   ├── llm_service.py         # LLM 调用服务
-│   │   ├── chain_service.py       # Chain 编排服务
-│   │   └── memory_service.py      # 记忆管理服务
+│   │   ├── persistence_service.py # 持久化服务
+│   │   └── persistence_decorator.py# 持久化装饰器
 │   │
 │   ├── config/                    # ⚙️ 配置管理
-│   │   ├── settings.py            # 环境配置
-│   │   └── context_config.py      # 上下文配置
+│   │   ├── environment.py         # 多环境管理
+│   │   ├── development.py         # 开发环境配置
+│   │   ├── testing.py             # 测试环境配置
+│   │   ├── production.py          # 生产环境配置
+│   │   └── settings.py            # 配置入口
 │   │
 │   ├── api/                       # 🌐 API 层
-│   │   ├── server.py              # FastAPI 服务器
-│   │   └── routes.py              # API 路由
+│   │   ├── streaming.py           # 流式输出 API
+│   │   ├── human_intervention.py  # 人工干预 API
+│   │   └── data.py                # 数据查询 API
 │   │
 │   └── utils/                     # 🛠️ 工具函数
 │       ├── logger.py              # 日志配置
-│       ├── json_extract.py        # JSON 提取工具
 │       └── helpers.py             # 通用工具
 │
 ├── tests/                         # 🧪 测试
-│   ├── unit/                      # 单元测试
-│   ├── integration/               # 集成测试
-│   └── e2e_pm_reviewer.py         # E2E 测试
+│   ├── e2e_pm_reviewer.py         # E2E 测试
+│   └── fixtures/                  # 测试数据
 │
 ├── docs/                          # 📚 文档
+│   ├── ENVIRONMENT_QUICK_START.md # 环境配置快速指南
+│   ├── MULTI_ENVIRONMENT_CONFIG.md# 多环境配置详解
+│   ├── MULTI_ENVIRONMENT_COMPLETE.md# 多环境实现报告
+│   ├── PERSISTENCE_COMPLETE.md    # 持久化系统报告
 │   ├── PROJECT_STANDARDS.md       # 项目标准
-│   ├── CONTEXT_MANAGEMENT.md      # 上下文管理指南
-│   └── README.md                  # 本文件
+│   └── CONTEXT_MANAGEMENT.md      # 上下文管理指南
 │
+├── data/                          # 💾 数据存储
+│   ├── dev.db                     # 开发数据库
+│   ├── test.db                    # 测试数据库
+│   └── prod.db                    # 生产数据库
+│
+├── .env                           # 基础配置（不提交）
+├── .env.development               # 开发环境配置
+├── .env.testing                   # 测试环境配置
+├── .env.production                # 生产环境配置
 ├── .env.example                   # 环境变量示例
 ├── requirements.txt               # Python 依赖
-└── README.md                      # 项目说明
+├── test_environment.py            # 环境配置测试
+├── test_env_switching.py          # 环境切换演示
+└── README.md                      # 本文件
 ```
 
 ---
@@ -175,9 +218,9 @@ muti_agents_chain/
 ### 1. 环境准备
 
 ```bash
-# 安装 Python 3.13（使用 pyenv）
-pyenv install 3.13.11
-pyenv local 3.13.11
+# 克隆仓库
+git clone https://github.com/your-repo/muti_agents_chain.git
+cd muti_agents_chain
 
 # 创建虚拟环境
 python -m venv .venv
@@ -191,43 +234,54 @@ source .venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 3. 配置环境变量
+### 3. 配置环境
 
 ```bash
-cp .env.example .env
+# 复制开发环境配置
+cp .env.example .env.development
+
+# 编辑配置文件
+vim .env.development
 ```
 
-编辑 `.env` 文件：
+配置示例：
 
 ```ini
 # LLM API 配置
 OPENAI_API_KEY=your_zhipu_api_key_here
-OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
-DEFAULT_MODEL=glm-5
+OPENAI_BASE_URL=https://api.scnet.cn/api/llm/v1/
+DEFAULT_MODEL=Qwen3-235B-A22B
 
 # 服务配置
 APP_HOST=0.0.0.0
 APP_PORT=8000
 DEBUG=true
-LOG_LEVEL=INFO
+LOG_LEVEL=DEBUG
+
+# 数据库配置
+DATABASE_URL=sqlite+aiosqlite:///./data/dev.db
+REDIS_URL=redis://localhost:6379/0
 
 # Agent 配置
-NODE_DELAY=2                    # 节点间冷却秒数（防限流）
+NODE_DELAY=5                    # 节点间冷却秒数（防限流）
 MAX_REVISION_COUNT=3            # 单 Agent 最大修改次数
 RECURSION_LIMIT=30              # LangGraph 最大递归深度
 STREAM_ENABLED=true             # 启用流式输出
 
-# 上下文管理配置
-MAX_CONTEXT_MESSAGES=100        # 最大上下文消息数
-MAX_CONTEXT_TOKENS=8000         # 最大上下文 tokens
-COMPACT_THRESHOLD=0.8           # 触发压缩的阈值
+# 限流配置
+LLM_RETRY_MAX=5                 # 最大重试次数
+LLM_RETRY_BASE_DELAY=5          # 首次重试等待秒数
+LLM_TIMEOUT=300                 # LLM 请求超时时间（秒）
 ```
 
 ### 4. 运行测试
 
 ```bash
-# 单元测试
-python -m pytest tests/unit/ -v
+# 环境配置测试
+python test_environment.py
+
+# 环境切换演示
+python test_env_switching.py
 
 # E2E 测试（需要有效的 API Key）
 python tests/e2e_pm_reviewer.py
@@ -236,14 +290,19 @@ python tests/e2e_pm_reviewer.py
 ### 5. 启动服务
 
 ```bash
-# 启动 FastAPI 服务
+# 开发环境（默认）
 python -m src.main
 
-# 或使用 uvicorn 直接启动
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+# 测试环境
+ENVIRONMENT=testing python -m src.main
+
+# 生产环境
+ENVIRONMENT=production python -m src.main
 ```
 
-访问 http://localhost:8000 查看 API 文档。
+访问 API 文档：
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
@@ -286,22 +345,87 @@ async def main():
 asyncio.run(main())
 ```
 
-### HTTP API 调用
+### 流式输出 API
 
 ```bash
-# 启动完整流水线
-curl -X POST http://localhost:8000/api/v1/run \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "我想做一个遛狗APP"
-  }'
+# 启动流式输出
+curl -N -X POST "http://localhost:8000/api/v1/stream/run?message=我想做一个笔记应用"
 
-# 查询任务状态
-curl http://localhost:8000/api/v1/status/{thread_id}
-
-# 获取任务结果
-curl http://localhost:8000/api/v1/result/{thread_id}
+# 或使用 HTTPie
+http -S --stream POST "http://localhost:8000/api/v1/stream/run?message=做一个笔记应用"
 ```
+
+### 人工干预处理
+
+```python
+from src.services.persistence_service import get_human_intervention_service
+
+# 获取待处理任务
+human_service = get_human_intervention_service()
+tasks = await human_service.get_pending_tasks()
+
+# 解决任务
+await human_service.resolve_intervention(
+    task_id="task-123",
+    resolution_type="approved",
+    feedback="同意通过，继续执行"
+)
+```
+
+---
+
+## 🔧 多环境配置
+
+### 环境切换方法
+
+#### 方法 1: 环境变量（推荐）
+
+```bash
+# 开发环境
+export ENVIRONMENT=development
+python -m src.main
+
+# 测试环境
+export ENVIRONMENT=testing
+python -m src.main
+
+# 生产环境
+export ENVIRONMENT=production
+python -m src.main
+```
+
+#### 方法 2: 代码中切换
+
+```python
+from src.config import set_environment, reload_settings
+
+# 切换到生产环境
+set_environment("production")
+
+# 重新加载配置
+settings = reload_settings()
+```
+
+#### 方法 3: Git 分支自动检测
+
+```bash
+# 创建特定分支会自动使用对应环境
+git checkout -b prod      # → production
+git checkout -b test      # → testing
+git checkout main         # → development
+```
+
+### 环境对比
+
+| 配置项 | Development | Testing | Production |
+|--------|-------------|---------|------------|
+| DEBUG | ✅ True | ✅ True | ❌ False |
+| LOG_LEVEL | DEBUG | DEBUG | WARNING |
+| 数据库 | dev.db | test.db | prod.db |
+| Redis DB | 0 | 1 | 2 |
+| API 文档 | 开启 | 开启 | 关闭 |
+| CORS | 全部 | 限制 | 严格 |
+
 
 ---
 
@@ -349,63 +473,29 @@ curl http://localhost:8000/api/v1/result/{thread_id}
 
 ---
 
-## 🔧 开发指南
+## 🧪 测试
 
-### 新增 Agent
+### 测试覆盖
 
-只需 3 步即可添加新的 Agent：
+| 类型 | 覆盖范围 | 命令 |
+|------|----------|------|
+| 环境测试 | 环境检测、配置加载、切换 | `python test_environment.py` |
+| 单元测试 | Agent 逻辑、工具函数 | `pytest tests/unit/ -v` |
+| 集成测试 | Agent 间协作 | `pytest tests/integration/ -v` |
+| E2E 测试 | 完整流程 | `python tests/e2e_pm_reviewer.py` |
 
-1. **创建节点** - `src/agents/nodes/your_agent.py`
-```python
-class YourAgent(BaseAgent):
-    name = "your_agent"
-    role = "您的角色"
+### 测试结果
 
-    async def run(self, state: AgentState) -> dict:
-        # 实现逻辑
-        return {"artifact": ...}
-
-    async def review(self, state: AgentState) -> bool:
-        # 自我审查
-        return True
 ```
+============================================================
+✅ 所有测试通过！
+============================================================
 
-2. **创建 Prompt** - `src/prompts/your_agent.py`
-```python
-SYSTEM_PROMPT = """
-您是一位专业的{角色}...
-"""
-```
-
-3. **注册阶段** - 在 `src/core/orchestrator.py` 添加配置
-```python
-StageRegistry.stages = [
-    # ... 其他阶段
-    {
-        "agent": AgentNames.YOUR_AGENT,
-        "artifact": "your_artifact",
-        "next_agent": AgentNames.NEXT_AGENT,
-    },
-]
-```
-
-### 上下文优化使用
-
-```python
-from src.memory.agent_context import prepare_messages_for_llm
-
-# 在 Agent 中使用优化的上下文
-messages = prepare_messages_for_llm(
-    state["messages"],
-    system_prompt=SYSTEM_PROMPT,
-    agent_name="your_agent",
-)
-
-# 自动处理：
-# ✅ 上下文压缩
-# ✅ 系统提示添加
-# ✅ Token 限制裁剪
-# ✅ 关键信息保留
+测试 1: 环境自动检测 ✅
+测试 2: 环境配置加载 ✅
+测试 3: 环境切换 ✅
+测试 4: .env 文件加载 ✅
+测试 5: 配置完整性 ✅
 ```
 
 ---
@@ -419,64 +509,59 @@ messages = prepare_messages_for_llm(
 - **Token 节省**: 平均节省 30-60% 的 token 使用量
 - **滑动窗口**: 保留最近的消息维持对话连贯性
 
-### 配置优化
+### 结果持久化
 
-```python
-from src.config.context_config import get_balanced_config
-
-# 选择预设配置
-config = get_balanced_config()  # 轻量/平衡/全面
-
-# 或自定义配置
-from src.memory.context_manager import ContextConfig
-
-config = ContextConfig(
-    max_messages=100,
-    max_tokens=8000,
-    compact_threshold=0.8,
-)
-```
-
----
-
-## 🧪 测试
-
-### 测试覆盖
-
-| 类型 | 覆盖范围 | 命令 |
-|------|----------|------|
-| 单元测试 | Agent 逻辑、工具函数 | `pytest tests/unit/ -v` |
-| 集成测试 | Agent 间协作 | `pytest tests/integration/ -v` |
-| E2E 测试 | 完整流程 | `python tests/e2e_pm_reviewer.py` |
-
-### 测试数据
-
-测试数据位于 `tests/fixtures/` 目录，包含：
-- 示例 PRD
-- 示例 TRD
-- 示例设计文档
-
----
-
-## 📚 文档
-
-- [项目标准](docs/PROJECT_STANDARDS.md) - 详细的开发标准和规范
-- [上下文管理](docs/CONTEXT_MANAGEMENT.md) - 智能上下文管理指南
-- [API 文档](http://localhost:8000/docs) - FastAPI 自动生成的 API 文档
+- **自动保存**: Agent 执行结果自动保存到数据库
+- **多版本管理**: 支持产出物的多个版本
+- **审查历史**: 完整的审查记录
+- **人工干预**: 完整的干预任务生命周期
 
 ---
 
 ## 🔍 环境变量
 
+### 基础配置
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `ENVIRONMENT` | `development` | 运行环境（development/testing/production） |
+| `DEBUG` | `true` | 调试模式 |
+| `LOG_LEVEL` | `DEBUG` | 日志级别 |
+
+### LLM 配置
+
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `OPENAI_API_KEY` | — | 智谱 API Key（必填） |
-| `DEFAULT_MODEL` | `glm-5` | 默认 LLM 模型 |
+| `DEFAULT_MODEL` | `Qwen3-235B-A22B` | 默认 LLM 模型 |
 | `OPENAI_BASE_URL` | 智谱 API | OpenAI 兼容 Base URL |
-| `NODE_DELAY` | `2` | 节点间冷却秒数 |
+| `LLM_TIMEOUT` | `300` | LLM 请求超时时间（秒） |
+
+### Agent 配置
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `NODE_DELAY` | `5` | 节点间冷却秒数 |
 | `MAX_REVISION_COUNT` | `3` | 单 Agent 最大修改次数 |
 | `RECURSION_LIMIT` | `30` | LangGraph 最大递归深度 |
 | `STREAM_ENABLED` | `true` | 启用流式输出 |
+| `LLM_RETRY_MAX` | `5` | 最大重试次数 |
+| `LLM_RETRY_BASE_DELAY` | `5` | 首次重试等待秒数 |
+
+---
+
+## 📚 文档
+
+### 用户文档
+- [项目状态总览](PROJECT_STATUS.md) - 项目进展和功能清单
+
+### 技术文档
+- [项目开发标准](docs/PROJECT_STANDARDS.md) - 详细的开发标准和规范
+- [上下文管理指南](docs/CONTEXT_MANAGEMENT.md) - 智能上下文管理指南
+
+### API 文档
+- Swagger UI: http://localhost:8000/docs (开发环境)
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
@@ -489,6 +574,13 @@ config = ContextConfig(
 3. 提交变更 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 创建 Pull Request
+
+### 开发规范
+
+- 遵循 [项目标准](docs/PROJECT_STANDARDS.md)
+- 添加单元测试
+- 更新相关文档
+- 确保所有测试通过
 
 ---
 
@@ -511,8 +603,18 @@ config = ContextConfig(
 如有问题或建议，请：
 
 - 提交 [Issue](https://github.com/your-repo/muti_agents_chain/issues)
-- 发送邮件到 [mmiamor@icloud.com](mmiamor@icloud.com)
+- 发送邮件到 [mmiamor@icloud.com](mailto:mmiamor@icloud.com)
+
+---
+
+## 🔗 相关链接
+
+- [项目状态](PROJECT_STATUS.md) - 查看项目进展
+- [更新日志](CHANGELOG.md) - 版本更新历史
+- [问题追踪](https://github.com/your-repo/muti_agents_chain/issues) - Bug 和功能请求
 
 ---
 
 **Made with ❤️ by Multi-Agent Chain Team**
+
+*最后更新: 2026-03-30*

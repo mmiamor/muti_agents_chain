@@ -66,3 +66,13 @@ app.include_router(router)
 from src.api.streaming import router as streaming_router
 
 app.include_router(streaming_router)
+
+# ── 人工干预 API ──
+from src.api.human_intervention import router as human_router
+
+app.include_router(human_router)
+
+# ── 数据查询 API ──
+from src.api.data import router as data_router
+
+app.include_router(data_router)

@@ -5,7 +5,10 @@ __pycache__/
 .venv/
 venv/
 env/
+# 环境配置文件（保留 .env.example 作为模板）
 .env
+.env.*
+!.env.example
 *.log
 logs/
 data/

@@ -30,3 +30,30 @@ def safe_get(data: dict, keys: list[str], default: Any = None) -> Any:
         else:
             return default
     return data
+
+
+def message_to_dict(message: Any) -> dict:
+    """将LangChain消息转换为字典"""
+    result = {
+        "content": message.content,
+        "role": getattr(message, "type", "unknown"),
+    }
+
+    # 添加name字段（如果有）
+    if hasattr(message, "name") and message.name:
+        result["name"] = message.name
+
+    return result
+
+
+def get_revision_count(state: dict, agent_name: str) -> int:
+    """获取Agent的修订次数"""
+    revision_counts = state.get("revision_counts", {})
+    return revision_counts.get(agent_name, 0)
+
+
+def next_revision_count(state: dict, agent_name: str) -> dict:
+    """增加修订次数并返回更新"""
+    revision_counts = state.get("revision_counts", {})
+    revision_counts[agent_name] = revision_counts.get(agent_name, 0) + 1
+    return {"revision_counts": revision_counts}
