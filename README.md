@@ -45,6 +45,14 @@
 - **默认回退** - 未配置的 Agent 自动使用默认模型
 - **运行时查询** - 支持查询和验证 Agent 模型配置
 
+### 🔗 自定义工作流链路
+- **灵活执行模式** - 支持顺序、并行、条件执行
+- **Agent 跳过** - 可跳过不需要的 Agent
+- **自定义审查策略** - 自动、人工、跳过、条件审查
+- **并行执行** - 多个 Agent 同时执行提高效率
+- **YAML/JSON 配置** - 文件化的配置管理
+- **预定义模板** - 常用工作流模板
+
 ---
 
 ## 🏗️ 系统架构
@@ -487,6 +495,106 @@ print(f"所有模型: {config.get_all_models()}")
 ```
 
 详细配置指南请参考：[Agent 模型配置指南](docs/AGENT_MODEL_CONFIG.md)
+
+---
+
+## 🔗 自定义工作流链路
+
+### 为什么需要自定义工作流？
+
+不同的项目需求不同，需要灵活的工作流配置：
+
+- **快速原型** - 跳过审查，快速迭代
+- **仅后端** - 只关注后端开发
+- **仅前端** - 只关注前端开发
+- **并行开发** - 前后端同时开发提高效率
+
+### 使用方法
+
+#### 方式 1: 使用预定义模板
+
+```python
+from src.core.workflow_loader import WorkflowLoader
+
+loader = WorkflowLoader()
+
+# 快速原型模板
+workflow = loader.load_template("rapid_prototype")
+
+# 可用模板:
+# - full_pipeline: 完整流水线
+# - rapid_prototype: 快速原型
+# - design_only: 仅设计
+# - backend_only: 仅后端
+# - frontend_only: 仅前端
+```
+
+#### 方式 2: 从文件加载
+
+```python
+# 加载 YAML 配置
+workflow = loader.load_from_file("workflows/my_workflow.yaml")
+```
+
+#### 方式 3: 动态创建
+
+```python
+# 创建自定义工作流
+workflow = loader.create_custom_workflow(
+    name="my_workflow",
+    agents=["pm_agent", "backend_dev_agent"],
+    parallel=False,
+    skip_review=True,
+)
+```
+
+### 配置文件示例
+
+```yaml
+# workflows/rapid_prototype.yaml
+name: rapid_prototype
+description: 快速原型开发，跳过审查
+stages:
+  - name: quick_design
+    agents:
+      - name: pm_agent
+      - name: architect_agent
+    mode: sequential
+    review:
+      enabled: false  # 跳过审查
+
+  - name: quick_dev
+    agents:
+      - name: backend_dev_agent
+      - name: frontend_dev_agent
+    mode: parallel  # 并行执行
+    review:
+      enabled: false
+```
+
+### 执行工作流
+
+```python
+from src.core.workflow_engine import WorkflowEngine
+from src.models.state import AgentState
+
+# 创建引擎
+engine = WorkflowEngine(workflow)
+
+# 准备初始状态
+initial_state = AgentState(
+    messages=[{"role": "user", "content": "创建一个 TODO 应用"}],
+    sender="user",
+)
+
+# 执行工作流
+final_state = await engine.execute(initial_state)
+
+# 获取执行摘要
+summary = engine.get_execution_summary()
+```
+
+详细配置指南请参考：[自定义工作流指南](docs/CUSTOM_WORKFLOW.md)
 
 ---
 

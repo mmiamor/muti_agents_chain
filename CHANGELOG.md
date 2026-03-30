@@ -10,10 +10,55 @@
 ## [Unreleased]
 
 ### 计划中
-- 并行执行优化（Backend + Frontend Agent）
 - 监控 Dashboard
 
 ### 新增 ✨
+
+#### 自定义工作流链路配置
+- **灵活执行模式**: 支持顺序、并行、条件执行
+- **Agent 跳过**: 可跳过不需要的 Agent
+- **自定义审查策略**: 自动、人工、跳过、条件审查
+- **并行执行**: 多个 Agent 同时执行提高效率
+- **条件分支**: 基于规则的条件执行
+- **工作流模板**: 预定义的常用工作流模板
+- **YAML/JSON 配置**: 文件化的配置管理
+
+#### 工作流配置模型
+- `src/models/workflow.py` - 完整的工作流配置模型
+- **AgentNodeConfig** - Agent 节点配置
+- **WorkflowStage** - 工作流阶段配置
+- **WorkflowConfig** - 完整工作流配置
+- **WorkflowTemplates** - 预定义模板集合
+
+#### 工作流引擎
+- `src/core/workflow_engine.py` - 工作流执行引擎
+- **顺序执行器** - 按顺序执行 Agent
+- **并行执行器** - 并行执行多个 Agent
+- **条件执行器** - 基于条件执行分支
+- **审查集成** - 自动审查和修复
+
+#### 工作流加载器
+- `src/core/workflow_loader.py` - 配置加载器
+- **模板加载** - 加载预定义模板
+- **文件加载** - 从 YAML/JSON 加载
+- **自定义创建** - 编程方式创建工作流
+
+#### 预定义工作流
+- **full_pipeline** - 完整开发流水线
+- **rapid_prototype** - 快速原型（无审查）
+- **design_only** - 仅设计阶段
+- **backend_only** - 仅后端开发
+- **frontend_only** - 仅前端开发
+
+#### 配置文件
+- `workflows/full_pipeline.yaml` - 完整流水线配置
+- `workflows/rapid_prototype.yaml` - 快速原型配置
+- `workflows/backend_only.yaml` - 后端工作流
+- `workflows/frontend_only.yaml` - 前端工作流
+
+#### 文档和示例
+- `docs/CUSTOM_WORKFLOW.md` - 完整配置指南
+- `examples/custom_workflow_example.py` - 使用示例
 
 #### Agent 专用模型配置
 - **独立模型配置**: 每个 Agent 可配置不同的 LLM 模型
