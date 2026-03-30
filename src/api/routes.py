@@ -61,3 +61,8 @@ async def get_context(session_id: str, last_n: int | None = None):
 
 
 app.include_router(router)
+
+# ── 流式输出 API ──
+from src.api.streaming import router as streaming_router
+
+app.include_router(streaming_router)

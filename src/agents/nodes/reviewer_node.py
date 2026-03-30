@@ -88,9 +88,35 @@ class ReviewerAgent:
         content = response.choices[0].message.content
         logger.debug(f"[Reviewer Agent] raw response: {content[:200]}")
 
-        feedback_data = extract_json(content)
-        feedback = ReviewFeedback(**feedback_data)
-        logger.info(f"[Reviewer Agent] result: {feedback.status}")
+        try:
+            feedback_data = extract_json(content)
+
+            # 确保 comments 字段是字符串
+            if isinstance(feedback_data.get("comments"), list):
+                # 如果是列表，转换为字符串
+                feedback_data["comments"] = "\n".join(
+                    item if isinstance(item, str) else str(item)
+                    for item in feedback_data["comments"]
+                )
+            elif not isinstance(feedback_data.get("comments"), str):
+                # 如果不是字符串也不是列表，转为字符串
+                feedback_data["comments"] = str(feedback_data.get("comments", ""))
+
+            # 确保 status 字段有效
+            if feedback_data.get("status") not in ["APPROVED", "REJECTED"]:
+                logger.warning(f"[Reviewer Agent] invalid status: {feedback_data.get('status')}")
+                feedback_data["status"] = "REJECTED"
+
+            feedback = ReviewFeedback(**feedback_data)
+            logger.info(f"[Reviewer Agent] result: {feedback.status}")
+
+        except Exception as e:
+            logger.error(f"[Reviewer Agent] failed to parse feedback: {e}")
+            # 如果解析失败，默认拒绝
+            feedback = ReviewFeedback(
+                status="REJECTED",
+                comments=f"审查反馈解析失败: {str(e)}。原始响应: {content[:200]}..."
+            )
 
         update = {
             "latest_review": feedback,

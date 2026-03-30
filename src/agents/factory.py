@@ -8,7 +8,7 @@ from src.services.llm_service import LLMService
 def create_llm() -> LLMService:
     """创建标准 LLM 实例（所有 Agent 共用）"""
     return LLMService(
-        api_key=settings.ZAI_API_KEY,
+        api_key=settings.OPENAI_API_KEY,
         base_url=settings.OPENAI_BASE_URL,
         default_model=settings.DEFAULT_MODEL,
         max_retries=settings.LLM_RETRY_MAX,

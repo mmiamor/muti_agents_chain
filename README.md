@@ -201,7 +201,6 @@ cp .env.example .env
 
 ```ini
 # LLM API 配置
-ZAI_API_KEY=your_zhipu_api_key_here
 OPENAI_API_KEY=your_zhipu_api_key_here
 OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
 DEFAULT_MODEL=glm-5
@@ -471,7 +470,7 @@ config = ContextConfig(
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `ZAI_API_KEY` | — | 智谱 API Key（必填） |
+| `OPENAI_API_KEY` | — | 智谱 API Key（必填） |
 | `DEFAULT_MODEL` | `glm-5` | 默认 LLM 模型 |
 | `OPENAI_BASE_URL` | 智谱 API | OpenAI 兼容 Base URL |
 | `NODE_DELAY` | `2` | 节点间冷却秒数 |

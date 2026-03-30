@@ -90,14 +90,14 @@ class LLMService:
         self,
         api_key: str,
         base_url: str = "https://open.bigmodel.cn/api/paas/v4/",
-        default_model: str = "glm-5",
+        default_model: str = "glm-5-turbo",
         max_retries: int = 3,
         base_delay: float = 3.0,
     ):
         self.client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
-            timeout=120.0,          # GLM 偶尔响应慢，给 2 分钟
+            timeout=120.0,
             max_retries=0,
         )
         self.default_model = default_model

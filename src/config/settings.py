@@ -25,10 +25,9 @@ class Settings:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
     # ── LLM — 智谱 GLM-5 ──
-    ZAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")         # 智谱 API Key
-    OPENAI_API_KEY: str = os.getenv("ZAI_API_KEY", "")      # 兼容 LLMService 现有字段
-    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4/")
-    DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-5")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")      # 兼容 LLMService 现有字段
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4")
+    DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "glm-5-trubo")
 
     # ── Memory ──
     MAX_CONTEXT_LENGTH: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
@@ -40,9 +39,10 @@ class Settings:
     STREAM_ENABLED: bool = os.getenv("STREAM_ENABLED", "true").lower() in ("1", "true", "yes")
 
     # ── 限流（适配智谱 GLM）──
-    LLM_RETRY_MAX: int = int(os.getenv("LLM_RETRY_MAX", "3"))           # 最大重试次数
-    LLM_RETRY_BASE_DELAY: float = float(os.getenv("LLM_RETRY_BASE_DELAY", "3"))  # 首次重试等待秒数
-    NODE_DELAY: float = float(os.getenv("NODE_DELAY", "2"))              # 节点间冷却秒数
+    LLM_RETRY_MAX: int = int(os.getenv("LLM_RETRY_MAX", "5"))           # 最大重试次数（增加到5次）
+    LLM_RETRY_BASE_DELAY: float = float(os.getenv("LLM_RETRY_BASE_DELAY", "5"))  # 首次重试等待秒数（增加到5秒）
+    NODE_DELAY: float = float(os.getenv("NODE_DELAY", "5"))              # 节点间冷却秒数（增加到5秒）
+    LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "300"))              # LLM 请求超时时间（秒）
 
     # ── Storage ──
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")

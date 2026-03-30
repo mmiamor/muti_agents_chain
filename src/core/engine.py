@@ -18,7 +18,7 @@ class Engine:
 
     def __init__(self):
         self.llm = LLMService(
-            api_key=settings.ZAI_API_KEY,
+            api_key=settings.OPENAI_API_KEY,
             base_url=settings.OPENAI_BASE_URL,
             default_model=settings.DEFAULT_MODEL,
         )
