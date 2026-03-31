@@ -100,9 +100,19 @@ def review_router(state: AgentState) -> str:
     3. APPROVED → 流转下一阶段
     4. REJECTED + 超过最大重试次数 → 人工干预
     5. REJECTED + 还有机会 → 打回当前 Agent 重做
+
+    Args:
+        state: 当前 Agent 状态
+
+    Returns:
+        str: 下一个节点名称
     """
     latest_review: ReviewFeedback | None = state.get("latest_review")
-    max_revisions = getattr(settings, "MAX_REVISION_COUNT", 3)
+
+    # 使用配置对象属性而非 getattr
+    max_revisions = 3  # 默认值，如果需要可以从配置获取
+    if hasattr(settings, 'MAX_REVISION_COUNT'):
+        max_revisions = settings.MAX_REVISION_COUNT
 
     stage = StageRegistry.find_stage(state)
 
