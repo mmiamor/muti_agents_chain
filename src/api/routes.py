@@ -76,3 +76,18 @@ app.include_router(human_router)
 from src.api.data import router as data_router
 
 app.include_router(data_router)
+
+# ── 工作流管理 API ──
+from src.api.workflows import router as workflows_router
+
+app.include_router(workflows_router)
+
+# ── 监控 API ──
+from src.api.monitoring import router as monitoring_router
+
+app.include_router(monitoring_router)
+
+# ── 监控仪表板 ──
+from src.api.monitoring_dashboard import router as dashboard_router
+
+app.include_router(dashboard_router)
