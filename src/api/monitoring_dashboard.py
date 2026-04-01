@@ -16,7 +16,7 @@ async def monitoring_dashboard():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Agent Chain - 监控仪表板</title>
+    <title>Omni Agent Graph - 监控仪表板</title>
     <style>
         * {
             margin: 0;
@@ -252,7 +252,7 @@ async def monitoring_dashboard():
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1>🚀 Multi-Agent Chain 监控仪表板</h1>
+            <h1>🚀 Omni Agent Graph 监控仪表板</h1>
             <p>实时监控系统性能、工作流执行和告警信息</p>
             <button class="refresh-button" onclick="loadDashboard()">🔄 刷新数据</button>
         </div>

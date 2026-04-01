@@ -126,14 +126,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    logger.info("🚀 AI Backend starting up...")
+    logger.info("🚀 Omni Agent Graph starting up...")
 
     # 初始化资源
     # TODO: 初始化数据库连接、Redis 等
 
     yield
 
-    logger.info("👋 AI Backend shutting down...")
+    logger.info("👋 Omni Agent Graph shutting down...")
 
     # 清理资源
     # TODO: 关闭数据库连接、Redis 等
@@ -141,9 +141,9 @@ async def lifespan(app: FastAPI):
 
 # 创建 FastAPI 应用
 app = FastAPI(
-    title="LLMChain AI Backend",
-    description="自动化 AI 后台服务",
-    version="0.1.0",
+    title="Omni Agent Graph",
+    description="全能型智能体编排系统",
+    version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs" if settings.ENABLE_API_DOCS else None,
     redoc_url="/redoc" if settings.ENABLE_API_DOCS else None,

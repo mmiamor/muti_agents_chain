@@ -1,5 +1,5 @@
 """
-LLMChain AI Backend — 应用入口
+Omni Agent Graph — 应用入口
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ logger = setup_logger("main", level=settings.LOG_LEVEL)
 
 
 def main():
-    logger.info(f"🐚 LLMChain AI Backend v0.1.0")
+    logger.info(f"🐚 Omni Agent Graph v1.0.0")
     logger.info(f"   Python: {sys.version.split()[0]}")
     logger.info(f"   Model:  {settings.DEFAULT_MODEL}")
     logger.info(f"   Host:   {settings.APP_HOST}:{settings.APP_PORT}")

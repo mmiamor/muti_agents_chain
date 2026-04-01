@@ -2,7 +2,7 @@
 
 ## 概述
 
-Multi-Agent Chain 现在支持完全自定义的工作流配置。您可以：
+Omni Agent Graph 现在支持完全自定义的工作流配置。您可以：
 
 - 🔧 **自定义 Agent 执行顺序**
 - ⚡ **并行执行多个 Agent**

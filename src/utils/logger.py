@@ -25,7 +25,7 @@ class StructuredFormatter(logging.Formatter):
     输出 JSON 格式的日志，便于日志聚合和分析
     """
 
-    def __init__(self, service_name: str = "llmchain"):
+    def __init__(self, service_name: str = "omni_agent_graph"):
         super().__init__()
         self.service_name = service_name
 
@@ -44,6 +44,7 @@ class StructuredFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "service": self.service_name,
+            "app": "OmniAgentGraph",
             "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
@@ -109,7 +110,7 @@ class TextFormatter(logging.Formatter):
 
 
 def setup_logger(
-    name: str = "llmchain",
+    name: str = "omni_agent_graph",
     level: str = "INFO",
     log_format: LogFormat = LogFormat.TEXT,
     log_file: Path | None = None,

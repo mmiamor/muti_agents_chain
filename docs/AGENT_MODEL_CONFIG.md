@@ -2,7 +2,7 @@
 
 ## 概述
 
-Multi-Agent Chain 现在支持为不同的 Agent 配置不同的 LLM 模型。这允许您根据每个 Agent 的特定需求选择最合适的模型，在性能、成本和质量之间取得最佳平衡。
+Omni Agent Graph 现在支持为不同的 Agent 配置不同的 LLM 模型。这允许您根据每个 Agent 的特定需求选择最合适的模型，在性能、成本和质量之间取得最佳平衡。
 
 ## 支持的 Agent
 

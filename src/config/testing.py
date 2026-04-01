@@ -21,7 +21,7 @@ class Settings:
     """测试环境配置"""
 
     # ── App ──
-    APP_NAME: str = "LLMChain AI Backend"
+    APP_NAME: str = "Omni Agent Graph"
     APP_VERSION: str = "0.1.0"
     APP_HOST: str = os.getenv("APP_HOST", "127.0.0.1")
     APP_PORT: int = int(os.getenv("APP_PORT", "8001"))

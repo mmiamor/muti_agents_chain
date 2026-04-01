@@ -1,4 +1,4 @@
-# 🚀 Multi-Agent Chain — AI 软件开发流水线
+# 🚀 Omni Agent Graph — 全能型智能体编排系统
 
 > 基于 LangGraph 的 Multi-Agent 系统，实现从产品需求到代码交付的全流程自动化。
 
@@ -61,7 +61,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Multi-Agent 开发流水线                         │
+│                  Omni Agent Graph 开发流水线                      │
 └─────────────────────────────────────────────────────────────────┘
 
 用户需求输入
@@ -149,7 +149,7 @@
 ## 📁 项目结构
 
 ```
-muti_agents_chain/
+omni_agent_graph/
 ├── src/
 │   ├── agents/                    # 🤖 Multi-Agent 系统
 │   │   ├── nodes/                 # Agent 节点实现
@@ -784,6 +784,6 @@ summary = engine.get_execution_summary()
 
 ---
 
-**Made with ❤️ by Multi-Agent Chain Team**
+**Made with ❤️ by Omni Agent Graph Team**
 
 *最后更新: 2026-03-30*

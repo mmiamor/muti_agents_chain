@@ -21,7 +21,7 @@ class Settings(BaseAppSettings):
     """
     开发环境配置
 
-    开发环境特点:
+    Omni Agent Graph 开发环境特点:
     - DEBUG 模式开启
     - 详细日志
     - API 文档开启

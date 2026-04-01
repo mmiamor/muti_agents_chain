@@ -16,7 +16,7 @@ from examples.stream_client import StreamClient, format_event
 async def demo_full_pipeline():
     """演示完整 Pipeline 流程"""
     print("="*60)
-    print("🚀 Multi-Agent Chain 流式输出演示")
+    print("🚀 Omni Agent Graph 流式输出演示")
     print("="*60)
     print()
 
