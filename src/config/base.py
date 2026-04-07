@@ -73,6 +73,12 @@ class BaseAppSettings(BaseSettings):
     ENABLE_DETAILED_LOGGING: bool = False
     ENABLE_API_DOCS: bool = True
     ENABLE_CORS: bool = True
+    ENABLE_RAG_FOR_PM: bool = True  # 为 PM Agent 启用 RAG
+
+    # ── RAG 配置 ──
+    RAG_TOP_K: int = 3  # 检索最相关的 K 个结果
+    RAG_SCORE_THRESHOLD: float = 0.6  # 相似度阈值
+    RAG_VECTOR_STORE_TYPE: str = "memory"  # memory 或 chroma
 
     # ── CORS 配置 ──
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]

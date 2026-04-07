@@ -17,7 +17,6 @@ logger = setup_logger("memory_service")
 
 class MemoryStore:
     """内存存储（可扩展为 Redis / DB）"""
-
     def __init__(self, enable_context_management: bool = True):
         self._short_term: dict[str, list[ChatMessage]] = {}   # session_id -> messages
         self._long_term: dict[str, Any] = {}                    # key -> value

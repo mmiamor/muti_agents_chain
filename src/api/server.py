@@ -131,6 +131,31 @@ async def lifespan(app: FastAPI):
     # 初始化资源
     # TODO: 初始化数据库连接、Redis 等
 
+    # 初始化 RAG 知识库（如果启用）
+    if settings.ENABLE_RAG_FOR_PM:
+        try:
+            from src.services.rag_service import get_prd_knowledge_base
+            from src.services.embedding_service import create_embeddings, create_in_memory_vector_store
+
+            kb = get_prd_knowledge_base()
+
+            # 配置嵌入模型和向量存储
+            embeddings = create_embeddings()
+            vector_store = create_in_memory_vector_store()
+
+            if embeddings and vector_store:
+                kb.embeddings = embeddings
+                kb.vector_store = vector_store
+
+                # 初始化知识库
+                await kb.initialize()
+                logger.info("✅ RAG knowledge base initialized successfully")
+            else:
+                logger.warning("⚠️ RAG enabled but embeddings/vector store not available")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize RAG knowledge base: {e}")
+
     yield
 
     logger.info("👋 Omni Agent Graph shutting down...")

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 
 from langchain_core.messages import AIMessage
 
@@ -11,6 +12,8 @@ from src.models.state import AgentState
 from src.models.document_models import BackendCodeSpec
 from src.agents.factory import create_llm, get_revision_count
 from src.services.llm_service import _retry_with_backoff
+from src.services.backend_codegen_service import BackendCodeGenerator
+from src.services.code_locator_service import CodeFileOrganizer
 from src.prompts.backend_dev_agent import SYSTEM_PROMPT
 from src.utils.json_extract import extract_json
 
@@ -43,6 +46,56 @@ class BackendDevAgent:
         if settings.NODE_DELAY > 0:
             await asyncio.sleep(settings.NODE_DELAY)
 
+        # ── 使用精确的代码生成器 ────────────────────────────────────
+        try:
+            # 初始化代码生成器
+            code_generator = BackendCodeGenerator()
+
+            # 初始化文件组织器
+            file_organizer = CodeFileOrganizer(project_type="backend")
+
+            # 生成代码结构
+            locations = file_organizer.organize_backend_code(trd)
+
+            # 检测冲突
+            conflicts = file_organizer.resolver.detect_conflicts(locations)
+            if conflicts:
+                logger.warning(f"[Backend Dev] Detected path conflicts: {list(conflicts.keys())}")
+
+            # 生成代码
+            output_dir = "./output"
+            code_spec = code_generator.generate_from_trd(trd, output_dir)
+
+            # 确保输出目录存在
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+            logger.info(f"[Backend Dev] generated {len(code_spec.files)} files")
+            logger.info(f"[Backend Dev] project structure:\n{code_spec.project_structure}")
+
+            return {
+                "backend_code": code_spec,
+                "sender": self.name,
+                "messages": [
+                    AIMessage(
+                        content=(
+                            f"Backend Dev 已生成后端代码:\n"
+                            f"文件数: {len(code_spec.files)}\n"
+                            f"技术栈: {trd.tech_stack.backend}\n"
+                            f"依赖: {code_spec.dependencies}\n\n"
+                            f"启动命令:\n" + "\n".join(f"  {cmd}" for cmd in code_spec.setup_commands)
+                        )
+                    )
+                ],
+            }
+
+        except Exception as e:
+            logger.error(f"[Backend Dev] code generation failed: {e}")
+
+            # 降级到原始 LLM 生成方式
+            return await self._fallback_generate(state, trd)
+
+    async def _fallback_generate(self, state: AgentState, trd) -> dict:
+        """降级生成方案（使用原始 LLM）"""
         # 审查反馈上下文
         review_context = ""
         latest_review = state.get("latest_review")
@@ -74,12 +127,12 @@ class BackendDevAgent:
         )
 
         content = response.choices[0].message.content
-        logger.debug(f"[Backend Dev] raw response: {content[:200]}")
+        logger.debug(f"[Backend Dev] fallback raw response: {content[:200]}")
 
         data = extract_json(content)
         code_spec = BackendCodeSpec(**data)
 
-        logger.info(f"[Backend Dev] generated {len(code_spec.files)} files")
+        logger.info(f"[Backend Dev] fallback generated {len(code_spec.files)} files")
 
         return {
             "backend_code": code_spec,
