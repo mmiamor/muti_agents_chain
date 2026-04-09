@@ -1,57 +1,89 @@
-# 🚀 Omni Agent Graph — 全能型智能体编排系统
+# 🚀 Omni Agent Graph
 
-> 基于 LangGraph 的 Multi-Agent 系统，实现从产品需求到代码交付的全流程自动化。
+<div align="center">
+
+**全能型智能体编排系统 — 从需求到代码的全流程自动化**
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.3+-green.svg)](https://github.com/langchain-ai/langgraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[功能特性](#-核心特性) • [快速开始](#-快速开始) • [系统架构](#-系统架构) • [使用指南](#-使用指南) • [API 文档](#-api-文档)
+
+</div>
+
+---
+
+## 📖 项目简介
+
+**Omni Agent Graph** 是一个基于 LangGraph 的 Multi-Agent 智能编排系统，通过 **7 个专业 AI Agent** 的协作，实现从产品需求到代码交付的全流程自动化。
+
+### 🎯 核心价值
+
+- **全流程自动化** - 从需求分析到代码生成，无需人工介入
+- **质量保障** - 自动审查机制，确保每个产出物符合标准
+- **灵活可扩展** - 支持自定义工作流、模型配置和技术栈
+- **生产就绪** - 完整的持久化、监控和人工干预支持
+
+### ✨ 应用场景
+
+```
+📱 产品原型 → 快速生成 PRD/TRD/设计文档
+💻 代码开发 → 自动生成前后端代码
+🧪 质量保障 → 自动测试和质量报告
+🔄 迭代优化 → 基于反馈持续改进
+```
 
 ---
 
 ## ✨ 核心特性
 
 ### 🤖 智能 Multi-Agent 协作
-- **7 个专业 Agent** - PM、架构师、设计师、后端开发、前端开发、QA、审查员
-- **自动编排** - 基于 LangGraph 状态机的智能流程控制
-- **质量保障** - 每个产出物经过自动审查，不合格自动修改（最多 3 次）
-- **人工干预** - 超过修改限制时触发人工干预流程
 
-### 🧠 智能上下文管理
+| Agent | 职责 | 产出物 |
+|-------|------|--------|
+| **PM Agent** | 产品需求分析 | PRD 文档 |
+| **Architect Agent** | 技术架构设计 | TRD 文档 |
+| **Design Agent** | UI/UX 设计 | 设计文档 |
+| **Backend Dev Agent** | 后端代码开发 | 后端代码规范 |
+| **Frontend Dev Agent** | 前端代码开发 | 前端代码规范 |
+| **QA Agent** | 质量测试 | QA 报告 |
+| **Reviewer Agent** | 质量审查 | 审查意见 |
+
+### 🧠 RAG 增强的知识复用
+
+- **智能检索** - 自动从历史 PRD 库中检索相似项目经验
+- **语义匹配** - 基于向量相似度的精准知识匹配
+- **持续学习** - 每个批准的 PRD 自动纳入知识库
+- **上下文增强** - 检索结果作为参考信息提升生成质量
+
+### 🎯 精确代码生成
+
+- **前后端分离** - 独立的后端和前端代码生成器
+- **路径精确定位** - 根据文件角色自动确定准确路径
+- **多技术栈支持** - FastAPI、NestJS、React、Vue 等
+- **职责清晰** - model/service/component 分层明确
+
+### 🔧 智能上下文管理
+
 - **自动压缩** - 当上下文超过阈值时自动压缩历史消息
 - **智能保留** - 保留关键信息（系统提示、用户需求、决策点）
 - **Token 优化** - 平均节省 30-60% 的 token 使用量
-- **滑动窗口** - 保留最近的消息维持对话连贯性
-
-### 📊 强类型数据模型
-- **Pydantic 模型** - 所有产出物使用强类型验证
-- **结构化输出** - PRD、TRD、设计文档、代码规范等
-- **类型安全** - 编译时类型检查，减少运行时错误
 
 ### 🌐 流式输出 + 持久化
+
 - **实时反馈** - Server-Sent Events (SSE) 流式输出
-- **细粒度事件** - 7 种事件类型（phase, progress, artifact, thinking, review, error, done）
+- **细粒度事件** - 7 种事件类型（phase、progress、artifact、thinking、review、error、done）
 - **结果持久化** - 自动保存所有 Agent 产出物到数据库
-- **人工干预管理** - 完整的干预任务生命周期管理
+- **人工干预** - 完整的干预任务生命周期管理
 
-### 🔧 多环境配置
-- **三环境支持** - Development（开发）、Testing（测试）、Production（生产）
-- **智能检测** - 自动检测环境（环境变量 → Git 分支 → 默认）
-- **配置隔离** - 每个环境独立的数据库和配置
-- **一键切换** - 简单的环境变量切换机制
+### 🔗 自定义工作流
 
-### 🎯 Agent 专用模型配置
-- **灵活模型选择** - 每个 Agent 可配置不同的 LLM 模型
-- **成本优化** - 根据任务重要性选择不同性能的模型
-- **默认回退** - 未配置的 Agent 自动使用默认模型
-- **运行时查询** - 支持查询和验证 Agent 模型配置
-
-### 🔗 自定义工作流链路
-- **灵活执行模式** - 支持顺序、并行、条件执行
+- **灵活执行** - 支持顺序、并行、条件执行
 - **Agent 跳过** - 可跳过不需要的 Agent
-- **自定义审查策略** - 自动、人工、跳过、条件审查
-- **并行执行** - 多个 Agent 同时执行提高效率
-- **YAML/JSON 配置** - 文件化的配置管理
-- **预定义模板** - 常用工作流模板
+- **自定义审查** - 自动、人工、跳过、条件审查
+- **YAML 配置** - 文件化的配置管理
 
 ---
 
@@ -69,31 +101,32 @@
      ▼
 ┌─────────────┐      ┌──────────────┐      ┌───────────────┐
 │  PM Agent   │─────▶│   Reviewer   │◀─────│  Feedback     │
-│ (产品经理)   │      │  (审查专家)   │      │  (反馈循环)    │
+│  📋 PRD     │      │  ✅ 审查专家  │      │  🔄 反馈循环  │
 └─────────────┘      └──────┬───────┘      └───────────────┘
      │ APPROVED               │
      ▼                        │ REJECTED (最多3次)
 ┌─────────────┐               │
 │Architect    │─────▶ ┌──────┴───────┐
-│(架构师)      │      │   Reviewer   │
+│ 🏗️ TRD      │      │   Reviewer   │
 └─────────────┘      │  (审查专家)   │
      │              └──────┬───────┘
      ▼                     │
 ┌─────────────┐             │
 │  Design     │─────▶ ┌────┴──────┐
-│ (UI/UX设计) │      │ Reviewer  │
+│  🎨 Design  │      │ Reviewer  │
 └─────────────┘      └────┬──────┘
      │                     │
      ▼                     │
 ┌─────────────┐             │
 │ Backend Dev │─────▶ ┌────┴──────┐
 │ Frontend Dev│      │ Reviewer  │
-└─────────────┘      └────┬──────┘
+│ 💻 Code     │      └────┬──────┘
+└─────────────┘             │
      │                     │
      ▼                     │
 ┌─────────────┐             │
 │   QA Agent  │─────▶ ┌────┴──────┐
-│ (质量保障)   │      │ Reviewer  │───▶ 最终交付
+│  🧪 QA      │      │ Reviewer  │───▶ 最终交付
 └─────────────┘      └───────────┘
 
 审查机制:
@@ -102,47 +135,67 @@
 🚨 超限      → 人工干预处理
 ```
 
-### 开发阶段详解
+### 技术架构
 
-| 阶段 | Agent | 产出物 | 说明 |
-|------|-------|--------|------|
-| 1️⃣ | PM Agent | PRD | 产品需求文档（用户故事、核心功能、业务流程） |
-| 2️⃣ | Architect Agent | TRD | 技术设计文档（技术栈、架构、数据库、API） |
-| 3️⃣ | Design Agent | DesignDocument | UI/UX 设计（页面规格、设计系统、用户旅程） |
-| 4️⃣ | Backend Dev Agent | BackendCodeSpec | 后端代码（项目结构、文件内容、启动命令） |
-| 5️⃣ | Frontend Dev Agent | FrontendCodeSpec | 前端代码（组件、样式、依赖配置） |
-| 6️⃣ | QA Agent | QAReport | 质量报告（测试计划、质量评分、潜在问题） |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Omni Agent Graph                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │  Multi-Agent │  │ RAG Knowledge│  │ Code Gen     │     │
+│  │   System     │  │    Base      │  │   System     │     │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
+│         │                  │                  │             │
+│         └──────────────────┼──────────────────┘             │
+│                            │                                │
+│         ┌──────────────────┴──────────────────┐             │
+│         │       LangGraph Orchestrator        │             │
+│         └──────────────────┬──────────────────┘             │
+│                            │                                │
+│         ┌──────────────────┴──────────────────┐             │
+│         │        Context Manager              │             │
+│         │    (Smart Compression & Retention)  │             │
+│         └──────────────────┬──────────────────┘             │
+│                            │                                │
+│  ┌─────────────────────────┼─────────────────────────┐     │
+│  │                         │                         │     │
+│  ▼                         ▼                         ▼     │
+│ ┌─────────┐           ┌─────────┐            ┌─────────┐  │
+│ │   LLM   │           │Database │            │  Redis  │  │
+│ │ Service │           │Storage  │            │  Cache  │  │
+│ └─────────┘           └─────────┘            └─────────┘  │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 🛠️ 技术栈
 
 ### 核心框架
+
 | 技术 | 版本 | 用途 |
 |------|------|------|
-| Python | 3.13+ | 核心开发语言 |
-| LangGraph | 0.3+ | Agent 编排与状态机 |
-| LangChain | Latest | LLM 抽象层 |
-| FastAPI | Latest | HTTP 服务层 |
+| ![Python](https://img.shields.io/badge/Python-3.13+-blue) | 3.13+ | 核心开发语言 |
+| ![LangGraph](https://img.shields.io/badge/LangGraph-0.3+-green) | 0.3+ | Agent 编排与状态机 |
+| ![LangChain](https://img.shields.io/badge/LangChain-Latest-orange) | Latest | LLM 抽象层 |
+| ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-teal) | Latest | HTTP 服务层 |
 
 ### 数据存储
+
 | 技术 | 用途 |
 |------|------|
-| SQLAlchemy | ORM 框架 |
-| aiosqlite | 异步 SQLite |
-| Redis | 缓存和会话 |
+| ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red) | ORM 框架 |
+| ![aiosqlite](https://img.shields.io/badge/aiosqlite-Async-blue) | 异步 SQLite |
+| ![Redis](https://img.sh.shields.io/badge/Redis-Cache-red) | 缓存和会话 |
 
 ### LLM 提供商
-| 提供商 | 模型 | 用途 |
-|--------|------|------|
-| 智谱 AI | Qwen3-235B-A22B | 主力语言模型 |
 
-### 开发工具
-| 工具 | 用途 |
-|------|------|
-| pytest | 测试框架 |
-| python-dotenv | 环境变量管理 |
-| uvicorn | ASGI 服务器 |
+| 提供商 | 模型      | 用途 |
+|--------|---------|------|
+| ![智谱 AI](https://img.shields.io/badge/智谱AI-Qwen3-purple) | GLM-4.7 | 主力语言模型 |
+| ![OpenAI Compatible](https://img.shields.io/badge/OpenAI-Compatible-green) | Any     | 支持兼容接口 |
 
 ---
 
@@ -150,91 +203,70 @@
 
 ```
 omni_agent_graph/
-├── src/
-│   ├── agents/                    # 🤖 Multi-Agent 系统
-│   │   ├── nodes/                 # Agent 节点实现
-│   │   │   ├── pm_node.py         # PM Agent
-│   │   │   ├── architect_node.py  # Architect Agent
-│   │   │   ├── design_node.py     # Design Agent
-│   │   │   ├── backend_dev_node.py# Backend Dev Agent
-│   │   │   ├── frontend_dev_node.py# Frontend Dev Agent
-│   │   │   ├── qa_node.py         # QA Agent
-│   │   │   └── reviewer_node.py   # Reviewer Agent
-│   │   └── prompts/               # Agent 提示词
+├── 📂 src/
+│   ├── 🤂 agents/                    # Multi-Agent 系统
+│   │   ├── nodes/                   # Agent 节点实现
+│   │   └── prompts/                 # Agent 提示词
 │   │
-│   ├── core/                      # ⚙️ 核心引擎
-│   │   ├── orchestrator.py        # LangGraph 编排器
-│   │   └── enhanced_pipeline.py   # 增强流程（持久化+流式）
+│   ├── ⚙️ core/                      # 核心引擎
+│   │   ├── orchestrator.py          # LangGraph 编排器
+│   │   └── enhanced_pipeline.py     # 增强流程
 │   │
-│   ├── memory/                    # 🧠 智能记忆系统
-│   │   └── context_manager.py     # 上下文管理器
+│   ├── 🧠 memory/                    # 智能记忆系统
+│   │   └── context_manager.py       # 上下文管理器
 │   │
-│   ├── models/                    # 📊 数据模型
-│   │   ├── state.py               # LangGraph State 定义
-│   │   └── document_models.py     # 文档模型（PRD/TRD等）
+│   ├── 📊 models/                    # 数据模型
+│   │   ├── state.py                 # LangGraph State
+│   │   └── document_models.py       # 文档模型
 │   │
-│   ├── database/                  # 💾 数据库
-│   │   └── models.py              # 持久化模型
+│   ├── 💾 database/                  # 数据库
+│   │   └── models.py                # 持久化模型
 │   │
-│   ├── services/                  # 🔧 服务层
-│   │   ├── llm_service.py         # LLM 调用服务
-│   │   ├── persistence_service.py # 持久化服务
-│   │   └── persistence_decorator.py# 持久化装饰器
+│   ├── 🔧 services/                  # 服务层
+│   │   ├── llm_service.py           # LLM 调用
+│   │   ├── rag_service.py           # RAG 检索 ⭐
+│   │   ├── backend_codegen_service.py# 后端代码生成 ⭐
+│   │   ├── frontend_codegen_service.py# 前端代码生成 ⭐
+│   │   └── code_locator_service.py  # 代码定位 ⭐
 │   │
-│   ├── config/                    # ⚙️ 配置管理
-│   │   ├── environment.py         # 多环境管理
-│   │   ├── development.py         # 开发环境配置
-│   │   ├── testing.py             # 测试环境配置
-│   │   ├── production.py          # 生产环境配置
-│   │   └── settings.py            # 配置入口
+│   ├── ⚙️ config/                    # 配置管理
+│   │   ├── environment.py           # 多环境管理
+│   │   ├── development.py           # 开发环境
+│   │   ├── testing.py               # 测试环境
+│   │   └── production.py            # 生产环境
 │   │
-│   ├── api/                       # 🌐 API 层
-│   │   ├── streaming.py           # 流式输出 API
-│   │   ├── human_intervention.py  # 人工干预 API
-│   │   └── data.py                # 数据查询 API
-│   │
-│   └── utils/                     # 🛠️ 工具函数
-│       ├── logger.py              # 日志配置
-│       └── helpers.py             # 通用工具
+│   └── 🌐 api/                       # API 层
+│       ├── streaming.py             # 流式输出
+│       ├── human_intervention.py    # 人工干预
+│       └── data.py                  # 数据查询
 │
-├── tests/                         # 🧪 测试
-│   ├── e2e_pm_reviewer.py         # E2E 测试
-│   └── fixtures/                  # 测试数据
+├── 📂 docs/                          # 📚 文档
+│   ├── PM_RAG_INTEGRATION.md        # RAG 集成指南 ⭐
+│   ├── CODE_GENERATION_SYSTEM.md    # 代码生成系统 ⭐
+│   └── ...                          # 更多文档
 │
-├── docs/                          # 📚 文档
-│   ├── ENVIRONMENT_QUICK_START.md # 环境配置快速指南
-│   ├── MULTI_ENVIRONMENT_CONFIG.md# 多环境配置详解
-│   ├── MULTI_ENVIRONMENT_COMPLETE.md# 多环境实现报告
-│   ├── PERSISTENCE_COMPLETE.md    # 持久化系统报告
-│   ├── PROJECT_STANDARDS.md       # 项目标准
-│   └── CONTEXT_MANAGEMENT.md      # 上下文管理指南
+├── 📂 workflows/                     # 工作流配置
+│   ├── full_pipeline.yaml           # 完整流水线
+│   ├── rapid_prototype.yaml         # 快速原型
+│   └── ...                          # 更多模板
 │
-├── data/                          # 💾 数据存储
-│   ├── dev.db                     # 开发数据库
-│   ├── test.db                    # 测试数据库
-│   └── prod.db                    # 生产数据库
-│
-├── .env                           # 基础配置（不提交）
-├── .env.development               # 开发环境配置
-├── .env.testing                   # 测试环境配置
-├── .env.production                # 生产环境配置
-├── .env.example                   # 环境变量示例
-├── requirements.txt               # Python 依赖
-├── test_environment.py            # 环境配置测试
-├── test_env_switching.py          # 环境切换演示
-└── README.md                      # 本文件
+├── 📂 tests/                         # 测试
+├── 📂 data/                          # 数据存储
+├── .env                             # 环境配置
+├── requirements.txt                 # Python 依赖
+└── README.md                        # 本文件
 ```
 
 ---
 
 ## 🚀 快速开始
 
-### 1. 环境准备
+### 1️⃣ 环境准备
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-repo/muti_agents_chain.git
-cd muti_agents_chain
+git clone https://github.com/mmiamor/omni_agent_graph.git
+cd omni_agent_graph
 
 # 创建虚拟环境
 python -m venv .venv
@@ -242,13 +274,13 @@ source .venv/bin/activate  # macOS/Linux
 # .\.venv\Scripts\Activate.ps1  # Windows
 ```
 
-### 2. 安装依赖
+### 2️⃣ 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. 配置环境
+### 3️⃣ 配置环境
 
 ```bash
 # 复制开发环境配置
@@ -258,7 +290,7 @@ cp .env.example .env.development
 vim .env.development
 ```
 
-配置示例：
+**配置示例：**
 
 ```ini
 # LLM API 配置
@@ -277,31 +309,18 @@ DATABASE_URL=sqlite+aiosqlite:///./data/dev.db
 REDIS_URL=redis://localhost:6379/0
 
 # Agent 配置
-NODE_DELAY=5                    # 节点间冷却秒数（防限流）
-MAX_REVISION_COUNT=3            # 单 Agent 最大修改次数
-RECURSION_LIMIT=30              # LangGraph 最大递归深度
+NODE_DELAY=5                    # 节点间冷却秒数
+MAX_REVISION_COUNT=3            # 最大修改次数
+RECURSION_LIMIT=30              # 最大递归深度
 STREAM_ENABLED=true             # 启用流式输出
 
-# 限流配置
-LLM_RETRY_MAX=5                 # 最大重试次数
-LLM_RETRY_BASE_DELAY=5          # 首次重试等待秒数
-LLM_TIMEOUT=300                 # LLM 请求超时时间（秒）
+# RAG 配置 ⭐
+ENABLE_RAG_FOR_PM=true          # 启用 PM Agent RAG
+RAG_TOP_K=3                     # 检索结果数量
+RAG_SCORE_THRESHOLD=0.6         # 相似度阈值
 ```
 
-### 4. 运行测试
-
-```bash
-# 环境配置测试
-python test_environment.py
-
-# 环境切换演示
-python test_env_switching.py
-
-# E2E 测试（需要有效的 API Key）
-python tests/e2e_pm_reviewer.py
-```
-
-### 5. 启动服务
+### 4️⃣ 启动服务
 
 ```bash
 # 开发环境（默认）
@@ -314,13 +333,13 @@ ENVIRONMENT=testing python -m src.main
 ENVIRONMENT=production python -m src.main
 ```
 
-访问 API 文档：
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+**访问 API 文档：**
+- 📖 Swagger UI: http://localhost:8000/docs
+- 📕 ReDoc: http://localhost:8000/redoc
 
 ---
 
-## 💡 使用示例
+## 💡 使用指南
 
 ### Python API 调用
 
@@ -328,7 +347,6 @@ ENVIRONMENT=production python -m src.main
 import asyncio
 from langchain_core.messages import HumanMessage
 from src.core.orchestrator import build_graph
-from src.models.state import AgentPhase
 
 async def main():
     # 构建图
@@ -340,7 +358,6 @@ async def main():
         "messages": [
             HumanMessage(content="我想做一个遛狗APP，帮助忙碌的都市养狗人找到靠谱的遛狗服务者")
         ],
-        "current_phase": AgentPhase.REQUIREMENT_GATHERING,
         "sender": "user",
     }
 
@@ -362,37 +379,165 @@ asyncio.run(main())
 ### 流式输出 API
 
 ```bash
-# 启动流式输出
+# 使用 curl
 curl -N -X POST "http://localhost:8000/api/v1/stream/run?message=我想做一个笔记应用"
 
-# 或使用 HTTPie
+# 使用 HTTPie
 http -S --stream POST "http://localhost:8000/api/v1/stream/run?message=做一个笔记应用"
 ```
 
-### 人工干预处理
+### 自定义工作流
 
 ```python
-from src.services.persistence_service import get_human_intervention_service
+from src.core.workflow_loader import WorkflowLoader
 
-# 获取待处理任务
-human_service = get_human_intervention_service()
-tasks = await human_service.get_pending_tasks()
+# 加载预定义模板
+loader = WorkflowLoader()
+workflow = loader.load_template("rapid_prototype")
 
-# 解决任务
-await human_service.resolve_intervention(
-    task_id="task-123",
-    resolution_type="approved",
-    feedback="同意通过，继续执行"
-)
+# 可用模板:
+# - full_pipeline: 完整流水线
+# - rapid_prototype: 快速原型
+# - backend_only: 仅后端
+# - frontend_only: 仅前端
 ```
 
 ---
 
-## 🔧 多环境配置
+## 🎯 核心功能
 
-### 环境切换方法
+### RAG 增强的 PM Agent
 
-#### 方法 1: 环境变量（推荐）
+```python
+from src.services.rag_service import retrieve_similar_prds
+
+# 自动检索相似 PRD
+context = await retrieve_similar_prds(
+    query="在线教育平台需求",
+    top_k=3,
+    score_threshold=0.6
+)
+
+# 检索结果会自动添加到 PM Agent 的上下文中
+```
+
+**优势：**
+- 📚 自动学习历史项目经验
+- 🎯 语义相似度精准匹配
+- 🔄 知识库持续积累
+
+### 精确代码生成
+
+```python
+from src.services.backend_codegen_service import BackendCodeGenerator
+from src.services.frontend_codegen_service import FrontendCodeGenerator
+
+# 后端代码生成
+backend_gen = BackendCodeGenerator()
+backend_code = backend_gen.generate_from_trd(trd, output_dir="./output")
+
+# 前端代码生成
+frontend_gen = FrontendCodeGenerator()
+frontend_code = frontend_gen.generate_from_design(design, trd, output_dir="./output")
+```
+
+**特性：**
+- 🎯 文件路径精确定位
+- 📦 标准项目结构
+- 🔧 多技术栈支持
+
+### 智能上下文管理
+
+```python
+from src.memory.context_manager import prepare_messages_for_llm
+
+# 自动压缩和优化上下文
+messages = prepare_messages_for_llm(
+    history_messages=long_history,
+    system_prompt=system_prompt,
+    agent_name="pm_agent"
+)
+```
+
+**优势：**
+- 💰 节省 30-60% Token
+- 🧠 保留关键信息
+- 🔄 自动压缩
+
+---
+
+## 📊 数据模型
+
+### PRD（产品需求文档）
+
+```json
+{
+  "vision": "打造最便捷的遛狗服务平台...",
+  "target_audience": ["忙碌的都市白领", "行动不便的老年人"],
+  "core_features": ["在线预约", "实时定位", "安全保险"],
+  "user_stories": [
+    {
+      "role": "狗主人",
+      "action": "预约遛狗服务",
+      "benefit": "节省时间，保障宠物安全"
+    }
+  ],
+  "mermaid_flowchart": "graph TD; A[用户] --> B[浏览]",
+  "non_functional": "响应时间 < 2s，可用性 99.9%"
+}
+```
+
+### TRD（技术设计文档）
+
+```json
+{
+  "tech_stack": {
+    "frontend": "React + TypeScript",
+    "backend": "FastAPI + Python",
+    "database": "PostgreSQL",
+    "infra": "Docker + AWS"
+  },
+  "architecture_overview": "微服务架构，前后端分离",
+  "mermaid_er_diagram": "erDiagram...",
+  "api_endpoints": [
+    {
+      "path": "/api/v1/users",
+      "method": "GET",
+      "description": "获取用户列表"
+    }
+  ]
+}
+```
+
+---
+
+## 🧪 测试
+
+### 测试覆盖
+
+| 类型 | 覆盖范围 | 命令 |
+|------|----------|------|
+| 环境测试 | 环境检测、配置加载 | `python test_environment.py` |
+| 单元测试 | Agent 逻辑、工具函数 | `pytest tests/unit/ -v` |
+| 集成测试 | Agent 间协作 | `pytest tests/integration/ -v` |
+| E2E 测试 | 完整流程 | `python tests/e2e_pm_reviewer.py` |
+
+---
+
+## 🔧 高级配置
+
+### Agent 专用模型配置
+
+```bash
+# .env.development
+DEFAULT_MODEL=glm-4              # 默认模型
+PM_MODEL=glm-4-plus             # PM Agent 使用高性能模型
+ARCHITECT_MODEL=glm-4-plus      # Architect Agent 使用高性能模型
+BACKEND_DEV_MODEL=glm-4-turbo   # 后端开发使用快速模型
+FRONTEND_DEV_MODEL=glm-4-turbo  # 前端开发使用快速模型
+```
+
+### 多环境配置
 
 ```bash
 # 开发环境
@@ -408,329 +553,20 @@ export ENVIRONMENT=production
 python -m src.main
 ```
 
-#### 方法 2: 代码中切换
-
-```python
-from src.config import set_environment, reload_settings
-
-# 切换到生产环境
-set_environment("production")
-
-# 重新加载配置
-settings = reload_settings()
-```
-
-#### 方法 3: Git 分支自动检测
-
-```bash
-# 创建特定分支会自动使用对应环境
-git checkout -b prod      # → production
-git checkout -b test      # → testing
-git checkout main         # → development
-```
-
-### 环境对比
-
-| 配置项 | Development | Testing | Production |
-|--------|-------------|---------|------------|
-| DEBUG | ✅ True | ✅ True | ❌ False |
-| LOG_LEVEL | DEBUG | DEBUG | WARNING |
-| 数据库 | dev.db | test.db | prod.db |
-| Redis DB | 0 | 1 | 2 |
-| API 文档 | 开启 | 开启 | 关闭 |
-| CORS | 全部 | 限制 | 严格 |
-
-
----
-
-## 🎯 Agent 模型配置
-
-### 为什么需要 Agent 专用模型？
-
-不同的 Agent 任务复杂度不同，对模型性能的要求也不同：
-
-- **PM Agent、Architect Agent** - 需要深度思考和复杂推理 → 使用高性能模型
-- **Backend Dev、Frontend Dev** - 代码生成任务对速度要求高 → 使用快速模型
-- **QA Agent** - 测试任务相对简单 → 使用标准模型
-
-### 配置方法
-
-在环境配置文件中添加 Agent 专用模型：
-
-```bash
-# .env.development
-DEFAULT_MODEL=glm-4              # 默认模型
-PM_MODEL=glm-4-plus             # PM Agent 使用高性能模型
-ARCHITECT_MODEL=glm-4-plus      # Architect Agent 使用高性能模型
-BACKEND_DEV_MODEL=glm-4-turbo   # 后端开发使用快速模型
-FRONTEND_DEV_MODEL=glm-4-turbo  # 前端开发使用快速模型
-```
-
-### 模型选择建议
-
-| Agent | 推荐模型 | 原因 |
-|-------|----------|------|
-| PM Agent | glm-4-plus | 需求分析需要深度思考 |
-| Architect Agent | glm-4-plus | 架构设计需要复杂推理 |
-| Design Agent | glm-4 | UI/UX 设计需要平衡性能和质量 |
-| Backend Dev Agent | glm-4-turbo | 代码生成需要速度 |
-| Frontend Dev Agent | glm-4-turbo | 代码生成需要速度 |
-| QA Agent | glm-4 | 测试任务相对简单 |
-| Reviewer Agent | glm-4-plus | 代码审查需要高质量输出 |
-
-### API 使用
-
-```python
-from src.agents.factory import create_llm
-from src.config import settings
-
-# 为特定 Agent 创建 LLM
-pm_llm = create_llm(agent_name="pm_agent")
-qa_llm = create_llm(agent_name="qa_agent")
-
-# 查看当前配置
-config = settings.agent_model_config
-print(f"PM Agent 模型: {config.get_model_for_agent('pm_agent')}")
-print(f"所有模型: {config.get_all_models()}")
-```
-
-详细配置指南请参考：[Agent 模型配置指南](docs/AGENT_MODEL_CONFIG.md)
-
----
-
-## 🔗 自定义工作流链路
-
-### 为什么需要自定义工作流？
-
-不同的项目需求不同，需要灵活的工作流配置：
-
-- **快速原型** - 跳过审查，快速迭代
-- **仅后端** - 只关注后端开发
-- **仅前端** - 只关注前端开发
-- **并行开发** - 前后端同时开发提高效率
-
-### 使用方法
-
-#### 方式 1: 使用预定义模板
-
-```python
-from src.core.workflow_loader import WorkflowLoader
-
-loader = WorkflowLoader()
-
-# 快速原型模板
-workflow = loader.load_template("rapid_prototype")
-
-# 可用模板:
-# - full_pipeline: 完整流水线
-# - rapid_prototype: 快速原型
-# - design_only: 仅设计
-# - backend_only: 仅后端
-# - frontend_only: 仅前端
-```
-
-#### 方式 2: 从文件加载
-
-```python
-# 加载 YAML 配置
-workflow = loader.load_from_file("workflows/my_workflow.yaml")
-```
-
-#### 方式 3: 动态创建
-
-```python
-# 创建自定义工作流
-workflow = loader.create_custom_workflow(
-    name="my_workflow",
-    agents=["pm_agent", "backend_dev_agent"],
-    parallel=False,
-    skip_review=True,
-)
-```
-
-### 配置文件示例
-
-```yaml
-# workflows/rapid_prototype.yaml
-name: rapid_prototype
-description: 快速原型开发，跳过审查
-stages:
-  - name: quick_design
-    agents:
-      - name: pm_agent
-      - name: architect_agent
-    mode: sequential
-    review:
-      enabled: false  # 跳过审查
-
-  - name: quick_dev
-    agents:
-      - name: backend_dev_agent
-      - name: frontend_dev_agent
-    mode: parallel  # 并行执行
-    review:
-      enabled: false
-```
-
-### 执行工作流
-
-```python
-from src.core.workflow_engine import WorkflowEngine
-from src.models.state import AgentState
-
-# 创建引擎
-engine = WorkflowEngine(workflow)
-
-# 准备初始状态
-initial_state = AgentState(
-    messages=[{"role": "user", "content": "创建一个 TODO 应用"}],
-    sender="user",
-)
-
-# 执行工作流
-final_state = await engine.execute(initial_state)
-
-# 获取执行摘要
-summary = engine.get_execution_summary()
-```
-
-详细配置指南请参考：[自定义工作流指南](docs/CUSTOM_WORKFLOW.md)
-
----
-
-## 📊 数据模型
-
-所有 Agent 产出物都使用 Pydantic 强类型模型：
-
-### PRD（产品需求文档）
-```python
-{
-  "vision": "打造最便捷的遛狗服务平台...",
-  "target_audience": ["忙碌的都市白领", "行动不便的老年人"],
-  "core_features": ["在线预约", "实时定位", "安全保险"],
-  "user_stories": [...],
-  "mermaid_flowchart": "graph TD; A[用户] --> B[浏览]",
-  "non_functional": {...}
-}
-```
-
-### TRD（技术设计文档）
-```python
-{
-  "tech_stack": {
-    "frontend": ["React", "TypeScript"],
-    "backend": ["FastAPI", "Python"],
-    "database": ["PostgreSQL"],
-    "infra": ["Docker", "AWS"]
-  },
-  "architecture_overview": "...",
-  "mermaid_er_diagram": "erDiagram...",
-  "api_endpoints": [...]
-}
-```
-
-### DesignDocument（UI/UX 设计）
-```python
-{
-  "page_specs": [...],
-  "user_journey": "...",
-  "design_tokens": {...},
-  "responsive_strategy": "...",
-  "component_library": [...]
-}
-```
-
----
-
-## 🧪 测试
-
-### 测试覆盖
-
-| 类型 | 覆盖范围 | 命令 |
-|------|----------|------|
-| 环境测试 | 环境检测、配置加载、切换 | `python test_environment.py` |
-| 单元测试 | Agent 逻辑、工具函数 | `pytest tests/unit/ -v` |
-| 集成测试 | Agent 间协作 | `pytest tests/integration/ -v` |
-| E2E 测试 | 完整流程 | `python tests/e2e_pm_reviewer.py` |
-
-### 测试结果
-
-```
-============================================================
-✅ 所有测试通过！
-============================================================
-
-测试 1: 环境自动检测 ✅
-测试 2: 环境配置加载 ✅
-测试 3: 环境切换 ✅
-测试 4: .env 文件加载 ✅
-测试 5: 配置完整性 ✅
-```
-
----
-
-## 📈 性能优化
-
-### 智能上下文管理
-
-- **自动压缩**: 当消息超过阈值时自动压缩
-- **智能保留**: 保留关键信息（系统提示、用户需求、决策点）
-- **Token 节省**: 平均节省 30-60% 的 token 使用量
-- **滑动窗口**: 保留最近的消息维持对话连贯性
-
-### 结果持久化
-
-- **自动保存**: Agent 执行结果自动保存到数据库
-- **多版本管理**: 支持产出物的多个版本
-- **审查历史**: 完整的审查记录
-- **人工干预**: 完整的干预任务生命周期
-
----
-
-## 🔍 环境变量
-
-### 基础配置
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `ENVIRONMENT` | `development` | 运行环境（development/testing/production） |
-| `DEBUG` | `true` | 调试模式 |
-| `LOG_LEVEL` | `DEBUG` | 日志级别 |
-
-### LLM 配置
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `OPENAI_API_KEY` | — | 智谱 API Key（必填） |
-| `DEFAULT_MODEL` | `Qwen3-235B-A22B` | 默认 LLM 模型 |
-| `OPENAI_BASE_URL` | 智谱 API | OpenAI 兼容 Base URL |
-| `LLM_TIMEOUT` | `300` | LLM 请求超时时间（秒） |
-
-### Agent 配置
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `NODE_DELAY` | `5` | 节点间冷却秒数 |
-| `MAX_REVISION_COUNT` | `3` | 单 Agent 最大修改次数 |
-| `RECURSION_LIMIT` | `30` | LangGraph 最大递归深度 |
-| `STREAM_ENABLED` | `true` | 启用流式输出 |
-| `LLM_RETRY_MAX` | `5` | 最大重试次数 |
-| `LLM_RETRY_BASE_DELAY` | `5` | 首次重试等待秒数 |
-
 ---
 
 ## 📚 文档
 
 ### 用户文档
-- [项目状态总览](PROJECT_STATUS.md) - 项目进展和功能清单
+- [项目标准](docs/PROJECT_STANDARDS.md) - 详细的开发标准和规范
+- [上下文管理](docs/CONTEXT_MANAGEMENT.md) - 智能上下文管理指南
+- [RAG 集成](docs/PM_RAG_INTEGRATION.md) - RAG 系统使用指南 ⭐
+- [代码生成系统](docs/CODE_GENERATION_SYSTEM.md) - 代码生成详解 ⭐
 
 ### 技术文档
-- [项目开发标准](docs/PROJECT_STANDARDS.md) - 详细的开发标准和规范
-- [上下文管理指南](docs/CONTEXT_MANAGEMENT.md) - 智能上下文管理指南
-
-### API 文档
-- Swagger UI: http://localhost:8000/docs (开发环境)
-- ReDoc: http://localhost:8000/redoc
+- [多环境配置](docs/MULTI_ENVIRONMENT_CONFIG.md) - 多环境配置详解
+- [工作流 API](docs/WORKFLOW_API_AND_MONITORING.md) - 工作流 API 和监控
+- [Agent 模型配置](docs/AGENT_MODEL_CONFIG.md) - Agent 模型配置指南
 
 ---
 
@@ -769,21 +605,17 @@ summary = engine.get_execution_summary()
 
 ## 📮 联系方式
 
-如有问题或建议，请：
-
-- 提交 [Issue](https://github.com/your-repo/muti_agents_chain/issues)
+- 提交 [Issue](https://github.com/mmiamor/omni_agent_graph/issues)
 - 发送邮件到 [mmiamor@icloud.com](mailto:mmiamor@icloud.com)
 
 ---
 
-## 🔗 相关链接
-
-- [项目状态](PROJECT_STATUS.md) - 查看项目进展
-- [更新日志](CHANGELOG.md) - 版本更新历史
-- [问题追踪](https://github.com/your-repo/muti_agents_chain/issues) - Bug 和功能请求
-
----
+<div align="center">
 
 **Made with ❤️ by Omni Agent Graph Team**
 
-*最后更新: 2026-03-30*
+*最后更新: 2026-04-09*
+
+[⬆ 返回顶部](#-omni-agent-graph)
+
+</div>
